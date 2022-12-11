@@ -4,6 +4,16 @@ const app = express();
 require('dotenv').config();
 const port = process.env.PORT || 3000;
 const qrcode = require('qrcode');
+const cors = require("cors");
+const corsOptions = {
+    origin: '*',
+    credentials: true,
+    optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 
@@ -29,12 +39,25 @@ client.initialize();
 
 client.on('qr', (qr) => {
     console.log('QR RECEIVED', qr);
+    app.get('/', (req, res) => {
+        res.send('API is not running! Please scan the QR code to login. <a href="/qr">Click here</a>');
+    });
+    qrcode.toDataURL(qr, function (err, url) {
+        qr_data = url;
+    });
     app.get('/qr', (req, res) => {
-        qrcode.toDataURL(qr, function (err, url) {
-            qr_data = url;
-        });
 
-        res.send(`<img src=${qr_data} />`);
+        res.send(`
+        <h1>Scan the QR code</h1>
+        <img src=${qr_data} />
+        <p>Scan the QR code above to login</p>
+
+        <script>
+            setTimeout(function() {
+                window.location.reload(1);
+            }, 5000);
+        </script>
+        `);
     });
 });
 
@@ -48,19 +71,33 @@ client.on('ready', () => {
         res.send('API is running!');
     });
 
-    app.get('/send', async (req, res) => {
-        const number = '8801700614900@c.us';
-        const message = '8801700614900';
-        await client.sendMessage(number, message);
-        res.send('Message sent!');
+
+    app.post('/send', async (req, res) => {
+        try {
+            const number = req.body.number;
+            const message = req.body.message;
+            const send = await client.sendMessage(number, message);
+            res.send(send);
+            console.log(send);
+        }
+        catch (error) {
+            console.log(error);
+        }
     });
 
-    app.get('/sendMedia', async (req, res) => {
-        const number = '8801700614900@c.us';
-        const media = await MessageMedia.fromUrl('https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
+
+    // https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png
+
+
+    app.post('/sendMedia', async (req, res) => {
+        const number = req.body.number;
+        if (!req.body.mediaUrl) {
+            res.send('Please provide a media URL');
+        }
+        const media = await MessageMedia.fromUrl(req.body.mediaUrl);
         const send = await client.sendMessage(number, media);
-        res.send('Media sent!');
-        console.log('Media sent!', send);
+        res.send(send);
+        console.log(send);
     });
 
     app.get('/getChats', async (req, res) => {
@@ -69,6 +106,9 @@ client.on('ready', () => {
     });
 
     app.get('/getChatMessages/:id', async (req, res) => {
+        if (!req.params.id) {
+            res.send('Please provide a chat ID');
+        }
         const chat = await client.getChatById(req.params.id);
         const messages = await chat.fetchMessages();
         res.send(messages);
@@ -76,9 +116,40 @@ client.on('ready', () => {
 
     client.on('message', async (msg) => {
         console.log('MESSAGE RECEIVED', msg);
-        if (msg.body == '!ping') {
-            msg.reply('pong');
+        // auto reply
+        if (msg.body == '!test') {
+            msg.reply('The bot is working!');
         }
+
+        if (msg.body == 'Hi') {
+            msg.reply('Hello');
+        }
+
+        if (msg.body == 'How are you?') {
+            msg.reply('Fine');
+        }
+
+
+        try {
+            // send a post request to external API example
+            const server_url = 'https://example.com';
+            const axios = require('axios');
+            const data = JSON.stringify({
+                ...msg
+            });
+
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            const response = await axios.post(server_url, data, config);
+            console.log(response.data);
+        }
+        catch (error) {
+
+        }
+
     });
 
     client.on('disconnected', (reason) => {
@@ -87,9 +158,9 @@ client.on('ready', () => {
         });
     });
 
-    app.listen(port, () => {
-        console.log(`Server running on port ${port}`);
-    }
-    );
-
 });
+
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+}
+);
