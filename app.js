@@ -5,7 +5,6 @@ require('dotenv').config();
 const port = process.env.PORT || 3000;
 const qrcode = require('qrcode');
 const cors = require("cors");
-// const fs = require('fs');
 const corsOptions = {
     origin: '*',
     credentials: true,
@@ -106,12 +105,7 @@ try {
         });
 
         client.client.on('authenticated', (session) => {
-            // fs.writeFile(client.sessionPath, JSON.stringify(session), (err) => {
-            //     if (err) {
-            //         console.error(err);
-            //     }
             console.log(client.id, ' AUTHENTICATED');
-            // });
 
         });
 
