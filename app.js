@@ -105,6 +105,31 @@ client.on('ready', () => {
         res.send(chats);
     });
 
+    const messageObj = [
+        {id: 1, msgBody: ["hello", "hi", "what's up"] , msgReply: ["hi", "hello", "nice to meete you :)"]},
+        {id: 2, msgBody: ["how are you", "tell me about your self"] , msgReply: ["I am fine", "Fine", "I am fine what about you :)"]},
+        {id: 2, msgBody: ["what are you doing", "doing"] , msgReply: ["I am eating", "I am chatting"]},
+    ]
+
+//     testing function
+//     const testMessage = (clientMsg) => {
+//         messageObj.map(({msgBody, msgReply}) => {
+//             msgBody.forEach((item) => {
+//                 if (item == clientMsg.toLowerCase()) {
+//                     console.log(msgReply[Math.floor(Math.random()*msgReply.length)]);
+//                 }
+//             })
+//         })
+//     }
+// let randomReply = msgReply[Math.floor(Math.random()*msgReply.length)]
+// do{
+//     randomReply = msgReply[Math.floor(Math.random()*msgReply.length)]
+// } while(replyedMsg !== randomReply)
+// replyedMsg = randomReply;
+// msg.reply(replyedMsg);
+// testMessage("Hello")
+
+
     app.get('/getChatMessages/:id', async (req, res) => {
         if (!req.params.id) {
             res.send('Please provide a chat ID');
@@ -114,20 +139,32 @@ client.on('ready', () => {
         res.send(messages);
     });
 
+
     client.on('message', async (msg) => {
         console.log('MESSAGE RECEIVED', msg);
         // auto reply
-        if (msg.body == '!test') {
-            msg.reply('The bot is working!');
-        }
 
-        if (msg.body == 'Hi') {
-            msg.reply('Hello');
-        }
+        messageObj.map(({msgBody, msgReply}) => {
+            msgBody.forEach((item) => {
+                if (item.toLowerCase() == msg.body.toLowerCase() ) {
+                    msg.reply(msgReply[Math.floor(Math.random()*msgReply.length)]);
+                }
+            })
+        })
 
-        if (msg.body == 'How are you?') {
-            msg.reply('Fine');
-        }
+        // if (msg.body == '!test') {
+        //     msg.reply('The bot is working!');
+        // }
+
+        // if (msg.body == 'Hi') {
+        //     msg.reply('Hello');
+        // }
+
+        // if (msg.body == 'How are you?') {
+        //     msg.reply('Fine');
+        // }
+
+
 
 
         try {
