@@ -1,6 +1,6 @@
 {
-  "name": "whatsapp-api",
-  "version": "1.0.0",
+  "name": "whatsapp-bot",
+  "version": "1.0.1",
   "description": "Whatsapp unofficial api made with node.js.",
   "main": "app.js",
   "scripts": {
@@ -8,8 +8,8 @@
     "dev": "nodemon app.js",
     "test": "nodemon app.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "sajidmahamud835",
+  "license": "GPL-3.0",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
@@ -17,5 +17,19 @@
     "nodemon": "^2.0.20",
     "qrcode": "^1.5.1",
     "whatsapp-web.js": "^1.18.4"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sajidmahamud835/whatsapp-bot.git"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "api"
+  ],
+  "bugs": {
+    "url": "https://github.com/sajidmahamud835/whatsapp-bot/issues"
+  },
+  "homepage": "https://github.com/sajidmahamud835/whatsapp-bot#readme"
 }
