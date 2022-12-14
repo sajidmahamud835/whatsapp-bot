@@ -51,10 +51,6 @@ clients = [{ id: 1, client: client1, sessionPath: './sessions/session1.json' }, 
 let qr_data = null;
 
 try {
-    app.get('/', (req, res) => {
-        res.sendFile('index.html', { root: __dirname });
-    });
-
     clients.forEach((client) => {
 
         //create a instance of whatsapp client by route
