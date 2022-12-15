@@ -50,16 +50,13 @@ A WhatsApp-bot that automatically replies WhatsApp messages.
 16. Now open the domain you selected in step 13 or the ip address of your server with the port you selected in step 12 in your browser.
 
 ## Usages
-1. Scan the QR code with your phone.
-2. Send a message to the phone number you are using with the bot (e.g. "Hi").
-3. The bot will reply with predefined messages (e.g. "Hello").
-4. The bot will automatically post all messages to the api you provided, and will reply with the response from the api.
-5. You can start the instance with ``/{instance_id}/init`` (GET method).
-6. You can stop the instance with ``/{instance_id}/stop`` (GET method).
-7. You can login with ``/{instance_id}/qr`` (GET method).
-8. You can logout with ``/{instance_id}/logout`` (GET method).
-9. You can send a message with the bot with ``/{instance_id}/send`` (POST method). The bot will send the message from the phone number you are using with the bot. The body should be like this: 
-
+1. The bot will automatically post all messages to the api you provided, and will reply with the response from the api.
+2. You can start the instance with ``/{instance_id}/init`` (GET method).
+3. You can stop the instance with ``/{instance_id}/stop`` (GET method).
+4. You can login with ``/{instance_id}/qr`` (GET method). Scan the QR code with your phone.
+5. You can logout with ``/{instance_id}/logout`` (GET method).
+6. Send a message to the phone number you are using with the bot (e.g. "Hi"). The bot will reply with predefined messages (e.g. "Hello").
+7. You can send a message with the bot with ``/{instance_id}/send`` (POST method). The bot will send the message from the phone number you are using with the bot. The body should be like this: 
 ```json
     {"number": "880171329xxxx@c.us", "message": "Hello"}
 ```
