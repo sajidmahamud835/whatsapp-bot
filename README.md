@@ -9,7 +9,7 @@ A WhatsApp-bot that automatically replies WhatsApp messages.
 5. Run `yarn install` in the repository folder
 6. Run `yarn start` in the repository folder
 
-## Usage
+## Usages
 1. Scan the QR code with your phone.
 2. Send a message to the phone number you are using with the bot (e.g. "Hi").
 3. The bot will reply with predefined messages (e.g. "Hello").
@@ -18,11 +18,12 @@ A WhatsApp-bot that automatically replies WhatsApp messages.
 6. You can stop the instance with ``/{instance_id}/stop`` (GET method).
 7. You can login with ``/{instance_id}/qr`` (GET method).
 8. You can logout with ``/{instance_id}/logout`` (GET method).
-9. You can send a message to the bot with ``/{instance_id}/send`` (POST method). The bot will send the message from the phone number you are using with the bot.
+9. You can send a message with the bot with ``/{instance_id}/send`` (POST method). The bot will send the message from the phone number you are using with the bot. The body should be like this: ``{"number": "880171329xxxx@c.us", "message": "Hello"}``. The number is the number you want to send the message to. The message is the message you want to send. The number should be in this format: ``880171329xxxx@c.us``. Here ``@c.us`` is the domain of the number. You can use ``@c.us``, ``@s.whatsapp.net``, ``@g.us``. You can use ``@c.us`` for personal chats, ``@s.whatsapp.net`` for group chats, and ``@g.us`` for broadcast lists.
+10. You can send media with the bot with ``/{instance_id}/sendMedia`` (POST method). The bot will send the media from the phone number you are using with the bot. The body should be like this: ``{"number": "880171329xxxx@c.us", "mediaUrl": "https://example.com/image.jpg"}``
 10. You can get all chats with ``/{instance_id}/getChats`` (GET method).
 11. You can get all messages from a chat with ``/{instance_id}/getChatMessages/{whatsapp_id}`` (GET method). The whatsapp_id is the id of the chat you want to get messages from. (e.g. `880171329xxxx@c.us`).
 
-## API
+## API & Webhook
 The bot will automatically post all messages to the api you provided, and will reply with the response from the api. The api should be a POST method with the following body:
 ```json
 {
