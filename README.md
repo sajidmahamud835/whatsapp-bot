@@ -30,7 +30,7 @@ The number is the number you want to send the message to. The message is the mes
 10. You can send media with the bot with ``/{instance_id}/sendMedia`` (POST method). The bot will send the media from the phone number you are using with the bot. The body should be like this: 
 
 ```json
-{"number": "880171329xxxx@c.us", "mediaUrl": "https://example.com/image.jpg"}
+    {"number": "880171329xxxx@c.us", "mediaUrl": "https://example.com/image.jpg"}
 ```
 10. You can get all chats with ``/{instance_id}/getChats`` (GET method).
 11. You can get all messages from a chat with ``/{instance_id}/getChatMessages/{whatsapp_id}`` (GET method). The whatsapp_id is the id of the chat you want to get messages from. (e.g. `880171329xxxx@c.us`).
