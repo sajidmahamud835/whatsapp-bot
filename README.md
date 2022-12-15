@@ -20,7 +20,7 @@ A WhatsApp-bot that automatically replies WhatsApp messages.
 8. You can logout with ``/{instance_id}/logout`` (GET method).
 9. You can send a message to the bot with ``/{instance_id}/send`` (POST method). The bot will send the message from the phone number you are using with the bot.
 10. You can get all chats with ``/{instance_id}/getChats`` (GET method).
-11. You can get all messages from a chat with ``/{instance_id}/getChatMessages`` (GET method).
+11. You can get all messages from a chat with ``/{instance_id}/getChatMessages/{whatsapp_id}`` (GET method). The whatsapp_id is the id of the chat you want to get messages from. (e.g. `880171329xxxx@c.us`).
 
 ## API
 The bot will automatically post all messages to the api you provided, and will reply with the response from the api. The api should be a POST method with the following body:
@@ -98,10 +98,10 @@ The bot will automatically post all messages to the api you provided, and will r
 ```
 
 ## Features
-- [x] Send a message to the bot
-- [x] Get all chats
-- [x] Get all messages from a chat
-- [x] Automatically post all messages to the api you provided, and will reply with the response from the api
+- [x] Send a message to the bot.
+- [x] Get all chats.
+- [x] Get all messages from a chat.
+- [x] Automatically post all messages to the api you provided, and will reply with the response from the api.
 
 
 ## License
