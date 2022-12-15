@@ -3,11 +3,12 @@ A WhatsApp-bot that automatically replies WhatsApp messages.
 
 ## Install
 1. Install [Node.js](https://nodejs.org/en/download/)
-2. Install [Yarn](https://yarnpkg.com/en/docs/install)
+2. Install [Yarn](https://yarnpkg.com/en/docs/install) (optional)
 3. Install [Git](https://git-scm.com/downloads)
 4. Clone this repository with cmd or tarminal command ```git clone https://github.com/sajidmahamud835/whatsapp-bot.git``` in the folder you want to install the bot
-5. Run `yarn install` in the repository folder
-6. Run `yarn start` in the repository folder
+5. Run `yarn install` or `npm install` in the repository folder
+6. Run `yarn start` or `npm start` in the repository folder
+7. Open ``http://localhost:3000`` in your browser.
 
 ## Usages
 1. Scan the QR code with your phone.
@@ -18,8 +19,19 @@ A WhatsApp-bot that automatically replies WhatsApp messages.
 6. You can stop the instance with ``/{instance_id}/stop`` (GET method).
 7. You can login with ``/{instance_id}/qr`` (GET method).
 8. You can logout with ``/{instance_id}/logout`` (GET method).
-9. You can send a message with the bot with ``/{instance_id}/send`` (POST method). The bot will send the message from the phone number you are using with the bot. The body should be like this: ``{"number": "880171329xxxx@c.us", "message": "Hello"}``. The number is the number you want to send the message to. The message is the message you want to send. The number should be in this format: ``880171329xxxx@c.us``. Here ``@c.us`` is the domain of the number. You can use ``@c.us``, ``@s.whatsapp.net``, ``@g.us``. You can use ``@c.us`` for personal chats, ``@s.whatsapp.net`` for group chats, and ``@g.us`` for broadcast lists.
-10. You can send media with the bot with ``/{instance_id}/sendMedia`` (POST method). The bot will send the media from the phone number you are using with the bot. The body should be like this: ``{"number": "880171329xxxx@c.us", "mediaUrl": "https://example.com/image.jpg"}``
+9. You can send a message with the bot with ``/{instance_id}/send`` (POST method). The bot will send the message from the phone number you are using with the bot. The body should be like this: 
+
+```json
+    {"number": "880171329xxxx@c.us", "message": "Hello"}
+```
+
+The number is the number you want to send the message to. The message is the message you want to send. The number should be in this format: ``880171329xxxx@c.us``. Here ``@c.us`` is the domain of the number. You can use ``@c.us``, ``@s.whatsapp.net``, ``@g.us``. You can use ``@c.us`` for personal chats, ``@s.whatsapp.net`` for group chats, and ``@g.us`` for broadcast lists.
+
+10. You can send media with the bot with ``/{instance_id}/sendMedia`` (POST method). The bot will send the media from the phone number you are using with the bot. The body should be like this: 
+
+```json
+{"number": "880171329xxxx@c.us", "mediaUrl": "https://example.com/image.jpg"}
+```
 10. You can get all chats with ``/{instance_id}/getChats`` (GET method).
 11. You can get all messages from a chat with ``/{instance_id}/getChatMessages/{whatsapp_id}`` (GET method). The whatsapp_id is the id of the chat you want to get messages from. (e.g. `880171329xxxx@c.us`).
 
@@ -103,7 +115,6 @@ The bot will automatically post all messages to the api you provided, and will r
 - [x] Get all chats.
 - [x] Get all messages from a chat.
 - [x] Automatically post all messages to the api you provided, and will reply with the response from the api.
-
 
 ## License
 [GNU General Public License v3.0](https://choosealicense.com/licenses/gpl-3.0/)
