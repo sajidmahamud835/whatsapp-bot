@@ -204,7 +204,7 @@ try {
             app.close();
         });
 
-        app.get('/logout', async (req, res) => {
+        app.get(`/${client.id}/logout`, async (req, res) => {
             await client.client.logout();
             res.send('Logged out');
         });
