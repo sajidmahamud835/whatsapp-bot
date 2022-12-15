@@ -85,17 +85,19 @@ try {
                     res.send('Client is already authenticated');
                     app.exit();
                 } else {
-                    res.send(`
-                        <h1>Scan the QR code</h1>
-                         <img src=${qr_data} />
-                         <p>Scan the QR code above to login</p>
+                    res.send(
+                        `
+                            <h1>Scan the QR code</h1>
+                             <img src=${qr_data} />
+                             <p>Scan the QR code above to login</p>
     
-                        <script>
-                            setTimeout(function() {
-                            window.location.reload(1);
-                                }, 5000);
-                        </script>
-                `);
+                            <script>
+                                setTimeout(function() {
+                                    window.location.reload(1);
+                                    }, 5000);
+                            </script>
+                        `
+                    );
                 }
             });
         });
