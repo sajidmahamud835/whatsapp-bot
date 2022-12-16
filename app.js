@@ -3,6 +3,7 @@ const whatsapp = require('whatsapp-web.js');
 const app = express();
 require('dotenv').config();
 const port = process.env.PORT || 3000;
+const postApi = process.env.POST_API || '';
 const qrcode = require('qrcode');
 const cors = require("cors");
 const corsOptions = {
@@ -51,9 +52,12 @@ clients = [{ id: 1, client: client1, sessionPath: './sessions/session1.json' }, 
 let qr_data = null;
 
 try {
+    app.get('/', (req, res) => {
+        res.send('Hello World! Please follow the documentration.');
+    });
+
     clients.forEach((client) => {
 
-        //create a instance of whatsapp client by route
         app.get(`/${client.id}`, (req, res) => {
             res.send(`API is not running! Please start the session by <a href=/${client.id}/init>Clicking here</a>.`);
         });
@@ -67,8 +71,6 @@ try {
                 res.send('Client initialized');
             }
         });
-
-
 
         client.client.on('qr', (qr) => {
             console.log('QR RECEIVED', qr);
@@ -107,13 +109,11 @@ try {
 
         });
 
-
         client.client.on('ready', () => {
             console.log(client.id, ' Client is ready!');
             app.get(`/${client.id}`, (req, res) => {
                 res.send('API is running!');
             });
-
 
             app.post(`/${client.id}/send`, async (req, res) => {
                 try {
@@ -173,26 +173,39 @@ try {
                     msg.reply('Fine');
                 }
 
+                if (postApi === '') {
+                    try {
+                        // send a post request to external API example
+                        const server_url = postApi;
+                        const axios = require('axios');
+                        const data = JSON.stringify({
+                            instanceid: client.client.id,
+                            ...msg
+                        });
 
-                try {
-                    // send a post request to external API example
-                    const server_url = 'https://example.com';
-                    const axios = require('axios');
-                    const data = JSON.stringify({
-                        instanceid: client.client.id,
-                        ...msg
-                    });
-
-                    const config = {
-                        headers: {
-                            'Content-Type': 'application/json'
+                        const config = {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        };
+                        const response = await axios.post(server_url, data, config);
+                        console.log(response.data);
+                        // {
+                        //     "instanceid": "2",
+                        //     "reply": "Hello",
+                        //     "replyMedia": "https://example.com/image.jpg"
+                        // }
+                        if (response.data.reply) {
+                            msg.reply(response.data.reply);
                         }
-                    };
-                    const response = await axios.post(server_url, data, config);
-                    console.log(response.data);
-                }
-                catch (error) {
-                    console.log(error);
+                        if (response.data.replyMedia) {
+                            const media = new MessageMedia('image/jpeg', response.data.replyMedia);
+                            msg.reply(media);
+                        }
+                    }
+                    catch (error) {
+                        console.log(error);
+                    }
                 }
 
             });
@@ -200,7 +213,6 @@ try {
 
         client.client.on('disconnected', (reason) => {
             console.log('Client was logged out', reason);
-
             app.close();
         });
 
