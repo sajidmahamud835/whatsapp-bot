@@ -160,7 +160,7 @@ try {
 
             client.client.on('message', async (msg) => {
                 console.log('MESSAGE RECEIVED', msg);
-                auto reply
+                // auto reply
                 if (msg.body == '!test') {
                     msg.reply('The bot is working!');
                 }
