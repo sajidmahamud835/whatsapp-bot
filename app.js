@@ -160,7 +160,7 @@ try {
 
             client.client.on('message', async (msg) => {
                 console.log('MESSAGE RECEIVED', msg);
-                // auto reply
+                auto reply
                 if (msg.body == '!test') {
                     msg.reply('The bot is working!');
                 }
@@ -173,7 +173,9 @@ try {
                     msg.reply('Fine');
                 }
 
-                if (postApi === '') {
+
+
+                if (postApi !== '') {
                     try {
                         // send a post request to external API example
                         const server_url = postApi;
