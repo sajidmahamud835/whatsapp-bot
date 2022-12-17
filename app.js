@@ -2,6 +2,7 @@ const express = require('express');
 const whatsapp = require('whatsapp-web.js');
 const app = express();
 require('dotenv').config();
+const PCR = require("puppeteer-chromium-resolver");
 const port = process.env.PORT || 3000;
 const postApi = process.env.POST_API || '';
 const qrcode = require('qrcode');
@@ -15,6 +16,18 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const PCRoption = {
+    revision: "",
+    detectionPath: "",
+    folderName: ".chromium-browser-snapshots",
+    defaultHosts: ["https://storage.googleapis.com", "https://npm.taobao.org/mirrors"],
+    hosts: [],
+    cacheRevisions: 2,
+    retry: 3,
+    silent: false
+};
+
+const stats = PCR(PCRoption);
 
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 
@@ -30,6 +43,7 @@ const puppeteer = {
         '--single-process',
         '--disable-gpu'
     ],
+    executablePath: stats.executablePath,
 }
 
 const clientGenerator = (session, id) => {
@@ -161,17 +175,17 @@ try {
             client.client.on('message', async (msg) => {
                 console.log('MESSAGE RECEIVED', msg);
                 // auto reply
-                if (msg.body == '!test') {
-                    msg.reply('The bot is working!');
-                }
+                // if (msg.body == '!test') {
+                //     msg.reply('The bot is working!');
+                // }
 
-                if (msg.body == 'Hi') {
-                    msg.reply('Hello');
-                }
+                // if (msg.body == 'Hi') {
+                //     msg.reply('Hello');
+                // }
 
-                if (msg.body == 'How are you?') {
-                    msg.reply('Fine');
-                }
+                // if (msg.body == 'How are you?') {
+                //     msg.reply('Fine');
+                // }
 
 
 
