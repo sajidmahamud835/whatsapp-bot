@@ -64,10 +64,15 @@ const client6 = clientGenerator('./sessions/session6.json', '6');
 clients = [{ id: 1, client: client1, sessionPath: './sessions/session1.json' }, { id: 2, client: client2, sessionPath: './sessions/session2.json' }, { id: 3, client: client3, sessionPath: './sessions/session3.json' }, { id: 4, client: client4, sessionPath: './sessions/session4.json' }, { id: 5, client: client5, sessionPath: './sessions/session5.json' }, { id: 6, client: client6, sessionPath: './sessions/session6.json' }];
 
 let qr_data = null;
+let disconnected = false;
 
 try {
     app.get('/', (req, res) => {
         res.send('Hello World! Please follow the documentration.');
+    });
+
+    app.get('/post', (req, res) => {
+        res.sendFile(__dirname + '/index.html');
     });
 
     clients.forEach((client) => {
@@ -120,6 +125,7 @@ try {
 
         client.client.on('authenticated', (session) => {
             console.log(client.id, ' AUTHENTICATED');
+            disconnected = false;
 
         });
 
@@ -152,8 +158,8 @@ try {
                 const mediaType = req.body.mediaType;
                 const caption = req.body.caption;
 
-                const media = new MessageMedia(mediaType, mediaUrl, caption);
-                const send = await client.client.sendMessage(number, media);
+                const media = await MessageMedia.fromUrl(mediaUrl);
+                const send = await client.client.sendMessage(number, media, { caption: caption });
                 res.send(send);
                 console.log(send);
             });
@@ -227,14 +233,26 @@ try {
             });
         });
 
+
         client.client.on('disconnected', (reason) => {
             console.log('Client was logged out', reason);
-            app.close();
+            disconnected = true;
         });
 
         app.get(`/${client.id}/logout`, async (req, res) => {
-            await client.client.logout();
-            res.send('Logged out');
+
+            if (client.client.state == 'disconnected') {
+                res.send('Client is already logged out');
+            } else if (client.client.state == 'open') {
+                await client.client.logout();
+                res.send('Client logged out');
+            } else if (!disconnected) {
+                await client.client.logout();
+                res.send('Client logged out');
+            } else {
+                res.send('Client is not logged in');
+            }
+
         });
     });
 } catch (error) {

@@ -1,0 +1,65 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>Whatsapp API</h1>
+    <br>
+    <!-- //create a selector instance id 1,2,3,4,5,6  -->
+    <select id="client-id">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+    </select>
+    <br>
+    <br>
+    <input type="text" name="number" id="number" placeholder="number">
+    <br>
+    <br>
+    <textarea type="text" name="message" id="message" placeholder="message"></textarea>
+    <br>
+    <br>
+    <input type="text" name="mediaUrl" id="mediaUrl" placeholder="mediaUrl">
+    <br>
+    <br>
+    <br>
+    <button onclick="sendMedia()">Send Media</button>
+
+
+    <script>
+        function sendMedia() {
+            const number = document.getElementById('number').value
+            const mediaUrl = document.getElementById('mediaUrl').value
+            const caption = document.getElementById('message').value
+            const clientId = document.getElementById('client-id').value
+            const data = {
+                number,
+                mediaUrl,
+                caption,
+                mediaType: 'image'
+            }
+            fetch(`/${clientId}/sendMedia`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                })
+        }
+    </script>
+
+</body>
+
+</html>
