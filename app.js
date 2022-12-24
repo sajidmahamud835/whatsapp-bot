@@ -64,7 +64,7 @@ const client6 = clientGenerator('./sessions/session6.json', '6');
 clients = [{ id: 1, client: client1, sessionPath: './sessions/session1.json' }, { id: 2, client: client2, sessionPath: './sessions/session2.json' }, { id: 3, client: client3, sessionPath: './sessions/session3.json' }, { id: 4, client: client4, sessionPath: './sessions/session4.json' }, { id: 5, client: client5, sessionPath: './sessions/session5.json' }, { id: 6, client: client6, sessionPath: './sessions/session6.json' }];
 
 let qr_data = null;
-let disconnected = false;
+let disconnected = true;
 
 try {
     app.get('/', (req, res) => {
@@ -72,10 +72,16 @@ try {
     });
 
     app.get('/post', (req, res) => {
-        res.sendFile(__dirname + '/index.html');
+        const key = req.query.key;
+        if (key == process.env.KEY) {
+            res.sendFile(__dirname + '/index.html');
+        } else {
+            res.send('Invalid key');
+        }
     });
 
     clients.forEach((client) => {
+        let isInitialized = false;
 
         app.get(`/${client.id}`, (req, res) => {
             res.send(`API is not running! Please start the session by <a href=/${client.id}/init>Clicking here</a>.`);
@@ -85,9 +91,11 @@ try {
             // check if client is ready 
             if (client.client.isReady) {
                 res.send('Client is already ready');
+                isInitialized = true;
             } else {
                 client.client.initialize();
-                res.send('Client initialized');
+                res.send('Client is initializing');
+                isInitialized = true;
             }
         });
 
@@ -181,17 +189,17 @@ try {
             client.client.on('message', async (msg) => {
                 console.log('MESSAGE RECEIVED', msg);
                 // auto reply
-                // if (msg.body == '!test') {
-                //     msg.reply('The bot is working!');
-                // }
+                if (msg.body == '!test') {
+                    msg.reply('The bot is working!');
+                }
 
-                // if (msg.body == 'Hi') {
-                //     msg.reply('Hello');
-                // }
+                if (msg.body == 'Hi') {
+                    msg.reply('Hello');
+                }
 
-                // if (msg.body == 'How are you?') {
-                //     msg.reply('Fine');
-                // }
+                if (msg.body == 'How are you?') {
+                    msg.reply('Fine');
+                }
 
 
 
@@ -241,12 +249,7 @@ try {
 
         app.get(`/${client.id}/logout`, async (req, res) => {
 
-            if (client.client.state == 'disconnected') {
-                res.send('Client is already logged out');
-            } else if (client.client.state == 'open') {
-                await client.client.logout();
-                res.send('Client logged out');
-            } else if (!disconnected) {
+            if (!disconnected) {
                 await client.client.logout();
                 res.send('Client logged out');
             } else {
@@ -254,6 +257,18 @@ try {
             }
 
         });
+
+        app.get(`/${client.id}/exit`, async (req, res) => {
+            if (isInitialized) {
+                isInitialized = false;
+                client.client.destroy();
+                console.log('Client exited');
+                res.send('Client exited');
+            } else {
+                res.send('Client is not initialized');
+            }
+        }
+        );
     });
 } catch (error) {
     console.log(error);
