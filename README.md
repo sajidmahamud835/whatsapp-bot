@@ -98,9 +98,9 @@ The bot operates by POSTing incoming message packets to your defined webhook and
 
 Explore other components of the research portfolio:
 
-1.  **[MarketSync-EA](../MarketSync-EA)** - Use this bot to send trade execution alerts to your phone.
-2.  **[InspectHealth](../inspecthealth)** - Send appointment reminders to patients.
-3.  **[Banksync](../banksync)** - 2FA authentication delivery via WhatsApp.
+1.  **[MarketSync-EA](https://github.com/sajidmahamud835/MarketSync-EA)** - Use this bot to send trade execution alerts to your phone.
+2.  **[InspectHealth](https://github.com/sajidmahamud835/inspecthealth)** - Send appointment reminders to patients.
+3.  **[BankSync](https://github.com/sajidmahamud835/banksync)** - 2FA authentication delivery via WhatsApp.
 
 ---
 
