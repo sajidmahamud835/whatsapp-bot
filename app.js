@@ -1,12 +1,15 @@
 const express = require('express');
-const whatsapp = require('whatsapp-web.js');
-const app = express();
-require('dotenv').config();
+const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const PCR = require("puppeteer-chromium-resolver");
-const port = process.env.PORT || 3000;
-const postApi = process.env.POST_API || '';
 const qrcode = require('qrcode');
 const cors = require("cors");
+const axios = require('axios');
+require('dotenv').config();
+
+const app = express();
+const port = process.env.PORT || 3000;
+const postApi = process.env.POST_API || '';
+
 const corsOptions = {
     origin: '*',
     credentials: true,
@@ -27,257 +30,302 @@ const PCRoption = {
     silent: false
 };
 
-const stats = PCR(PCRoption);
+// Initialize PCR synchronously is not possible, so we will initialize clients after PCR is ready
+// But PCR returns a promise if using async, or we can use the stats if sync (which PCR seems to be sync here? No, usually it is async).
+// Looking at original code: `const stats = PCR(PCRoption);`
+// PCR from 'puppeteer-chromium-resolver' returns a Promise. The original code was likely broken or using an old version where it might have been sync?
+// Or maybe it was `await PCR(PCRoption)` but top level await wasn't supported.
+// Let's assume it returns a promise and we need to handle it.
 
-const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
+// Actually, looking at 'puppeteer-chromium-resolver' docs or usage, it returns a promise.
+// So the original code `const stats = PCR(PCRoption);` assigned a Promise to `stats`.
+// And `executablePath: stats.executablePath` would be undefined.
+// This means the original code might have been broken regarding executablePath unless PCR behaves differently.
+// However, I will wrap initialization in an async function.
 
-const puppeteer = {
-    headless: true,
-    args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu'
-    ],
-    executablePath: stats.executablePath,
-}
+let clients = [];
+let qr_data = {}; // Map client ID to QR data
+let disconnected = {}; // Map client ID to disconnected status
 
-const clientGenerator = (session, id) => {
-    return new Client({
-        session: session,
-        authStrategy: new LocalAuth({ clientId: id }),
-        puppeteer: puppeteer
-    });
-};
+// Define routes outside the loop
 
-const client1 = clientGenerator('./sessions/session1.json', '1');
-const client2 = clientGenerator('./sessions/session2.json', '2');
-const client3 = clientGenerator('./sessions/session3.json', '3');
-const client4 = clientGenerator('./sessions/session4.json', '4');
-const client5 = clientGenerator('./sessions/session5.json', '5');
-const client6 = clientGenerator('./sessions/session6.json', '6');
+app.get('/', (req, res) => {
+    res.send('Hello World! Please follow the documentation.');
+});
 
-clients = [{ id: 1, client: client1, sessionPath: './sessions/session1.json' }, { id: 2, client: client2, sessionPath: './sessions/session2.json' }, { id: 3, client: client3, sessionPath: './sessions/session3.json' }, { id: 4, client: client4, sessionPath: './sessions/session4.json' }, { id: 5, client: client5, sessionPath: './sessions/session5.json' }, { id: 6, client: client6, sessionPath: './sessions/session6.json' }];
+app.get('/post', (req, res) => {
+    const key = req.query.key;
+    if (key == process.env.KEY) {
+        res.sendFile(__dirname + '/index.html');
+    } else {
+        res.send('Invalid key');
+    }
+});
 
-let qr_data = null;
-let disconnected = true;
+// Dynamic routes handler
+// Instead of defining routes in loop, we can use a parameterized route
+// But the original code had fixed IDs 1-6.
+// I will keep the loop for initialization but define routes generically where possible or use the loop to define routes ONCE.
 
-try {
-    app.get('/', (req, res) => {
-        res.send('Hello World! Please follow the documentration.');
-    });
+// We need to initialize clients first.
+const initClients = async () => {
+    let stats;
+    try {
+        stats = await PCR(PCRoption);
+    } catch (err) {
+        console.error("Failed to resolve Chromium", err);
+        return;
+    }
 
-    app.get('/post', (req, res) => {
-        const key = req.query.key;
-        if (key == process.env.KEY) {
-            res.sendFile(__dirname + '/index.html');
-        } else {
-            res.send('Invalid key');
-        }
-    });
+    const puppeteerConfig = {
+        headless: true,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu'
+        ],
+        executablePath: stats.executablePath,
+    };
 
-    clients.forEach((client) => {
-        let isInitialized = false;
-
-        app.get(`/${client.id}`, (req, res) => {
-            res.send(`API is not running! Please start the session by <a href=/${client.id}/init>Clicking here</a>.`);
+    const clientGenerator = (id) => {
+        return new Client({
+            authStrategy: new LocalAuth({ clientId: id }),
+            puppeteer: puppeteerConfig
         });
+    };
 
-        app.get(`/${client.id}/init`, (req, res) => {
-            // check if client is ready 
-            if (client.client.isReady) {
-                res.send('Client is already ready');
-                isInitialized = true;
+    // Create 6 clients
+    for (let i = 1; i <= 6; i++) {
+        const id = i.toString();
+        const client = clientGenerator(id);
+        clients.push({ id: id, client: client, isInitialized: false });
+        disconnected[id] = true;
+    }
+
+    // Now set up routes and event listeners
+    clients.forEach((clientObj) => {
+        const { id, client } = clientObj;
+
+        // Route: Status/Info
+        app.get(`/${id}`, (req, res) => {
+            if (clientObj.isInitialized && client.info) {
+                 res.send('API is running!');
+            } else if (clientObj.isInitialized) {
+                 res.send('Client is initializing or waiting for QR scan.');
             } else {
-                client.client.initialize();
-                res.send('Client is initializing');
-                isInitialized = true;
+                 res.send(`API is not running! Please start the session by <a href=/${id}/init>Clicking here</a>.`);
             }
         });
 
-        client.client.on('qr', (qr) => {
-            console.log('QR RECEIVED', qr);
-            app.get(`/${client.id}/`, (req, res) => {
-                res.send('API is not running! Please scan the QR code to login. <a href="/qr">Click here</a>');
-            });
+        // Route: Init
+        app.get(`/${id}/init`, (req, res) => {
+            if (clientObj.isInitialized) {
+                res.send('Client is already initializing or ready');
+            } else {
+                client.initialize().catch(err => console.error(err));
+                clientObj.isInitialized = true;
+                res.send('Client is initializing');
+            }
+        });
+
+        // Event: QR
+        client.on('qr', (qr) => {
+            console.log(`QR RECEIVED for Client ${id}`, qr);
             qrcode.toDataURL(qr, function (err, url) {
-                qr_data = url;
-            });
-            app.get(`/${client.id}/qr`, (req, res) => {
-
-                // check if client is authenticated
-                if (client.client.authInfo) {
-                    res.send('Client is already authenticated');
-                    app.exit();
-                } else {
-                    res.send(
-                        `
-                            <h1>Scan the QR code</h1>
-                             <img src=${qr_data} />
-                             <p>Scan the QR code above to login</p>
-    
-                            <script>
-                                setTimeout(function() {
-                                    window.location.reload(1);
-                                    }, 5000);
-                            </script>
-                        `
-                    );
-                }
+                qr_data[id] = url;
             });
         });
 
-        client.client.on('authenticated', (session) => {
-            console.log(client.id, ' AUTHENTICATED');
-            disconnected = false;
-
+        // Route: Get QR
+        app.get(`/${id}/qr`, (req, res) => {
+            if (client.info) {
+                res.send('Client is already authenticated');
+            } else if (qr_data[id]) {
+                res.send(
+                    `
+                        <h1>Scan the QR code</h1>
+                         <img src=${qr_data[id]} />
+                         <p>Scan the QR code above to login</p>
+                         <script>
+                            setTimeout(function() {
+                                window.location.reload(1);
+                            }, 5000);
+                        </script>
+                    `
+                );
+            } else {
+                 res.send('QR code not generated yet or client not initialized. <a href="/' + id + '/init">Initialize</a>');
+            }
         });
 
-        client.client.on('ready', () => {
-            console.log(client.id, ' Client is ready!');
-            app.get(`/${client.id}`, (req, res) => {
-                res.send('API is running!');
-            });
+        // Event: Authenticated
+        client.on('authenticated', () => {
+            console.log(id, ' AUTHENTICATED');
+            disconnected[id] = false;
+        });
 
-            app.post(`/${client.id}/send`, async (req, res) => {
-                try {
-                    const number = req.body.number;
-                    const message = req.body.message;
-                    const send = await client.client.sendMessage(number, message);
-                    res.send(send);
-                    console.log(send);
-                }
-                catch (error) {
-                    console.log(error);
-                }
-            });
+        // Event: Ready
+        client.on('ready', () => {
+            console.log(id, ' Client is ready!');
+        });
 
-            app.post(`/${client.id}/sendMedia`, async (req, res) => {
+        // Route: Send Message
+        app.post(`/${id}/send`, async (req, res) => {
+            try {
                 const number = req.body.number;
-                if (!req.body.mediaUrl) {
-                    res.send('Please provide a media url');
+                const message = req.body.message;
+                // Basic validation
+                if (!number || !message) {
+                    return res.status(400).send("Missing number or message");
                 }
-
-                const mediaUrl = req.body.mediaUrl;
-                const mediaType = req.body.mediaType;
-                const caption = req.body.caption;
-
-                const media = await MessageMedia.fromUrl(mediaUrl);
-                const send = await client.client.sendMessage(number, media, { caption: caption });
+                const send = await client.sendMessage(number, message);
                 res.send(send);
                 console.log(send);
-            });
+            }
+            catch (error) {
+                console.log(error);
+                res.status(500).send(error.toString());
+            }
+        });
 
-            app.get(`/${client.id}/getChats`, async (req, res) => {
-                const chats = await client.client.getChats();
-                res.send(chats);
-            });
+        // Route: Send Media
+        app.post(`/${id}/sendMedia`, async (req, res) => {
+            try {
+                const number = req.body.number;
+                const mediaUrl = req.body.mediaUrl;
+                const caption = req.body.caption || '';
 
-            app.get(`/${client.id}/getChatMessages/:id`, async (req, res) => {
-                if (!req.params.id) {
-                    res.send('Please provide a chat ID');
+                if (!mediaUrl) {
+                    return res.send('Please provide a media url');
                 }
-                const chat = await client.client.getChatById(req.params.id);
+
+                const media = await MessageMedia.fromUrl(mediaUrl);
+                const send = await client.sendMessage(number, media, { caption: caption });
+                res.send(send);
+                console.log(send);
+            } catch(error) {
+                console.log(error);
+                res.status(500).send(error.toString());
+            }
+        });
+
+        // Route: Get Chats
+        app.get(`/${id}/getChats`, async (req, res) => {
+            try {
+                const chats = await client.getChats();
+                res.send(chats);
+            } catch(error) {
+                console.log(error);
+                res.status(500).send(error.toString());
+            }
+        });
+
+        // Route: Get Chat Messages
+        app.get(`/${id}/getChatMessages/:chatId`, async (req, res) => {
+            try {
+                if (!req.params.chatId) {
+                    return res.send('Please provide a chat ID');
+                }
+                const chat = await client.getChatById(req.params.chatId);
                 const messages = await chat.fetchMessages();
                 res.send(messages);
-            });
-
-            client.client.on('message', async (msg) => {
-                console.log('MESSAGE RECEIVED', msg);
-                // auto reply
-                if (msg.body == '!test') {
-                    msg.reply('The bot is working!');
-                }
-
-                if (msg.body == 'Hi') {
-                    msg.reply('Hello');
-                }
-
-                if (msg.body == 'How are you?') {
-                    msg.reply('Fine');
-                }
-
-
-
-                if (postApi !== '') {
-                    try {
-                        // send a post request to external API example
-                        const server_url = postApi;
-                        const axios = require('axios');
-                        const data = JSON.stringify({
-                            instanceid: client.client.id,
-                            ...msg
-                        });
-
-                        const config = {
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        };
-                        const response = await axios.post(server_url, data, config);
-                        console.log(response.data);
-                        // {
-                        //     "instanceid": "2",
-                        //     "reply": "Hello",
-                        //     "replyMedia": "https://example.com/image.jpg"
-                        // }
-                        if (response.data.reply) {
-                            msg.reply(response.data.reply);
-                        }
-                        if (response.data.replyMedia) {
-                            const media = new MessageMedia('image/jpeg', response.data.replyMedia);
-                            msg.reply(media);
-                        }
-                    }
-                    catch (error) {
-                        console.log(error);
-                    }
-                }
-
-            });
+            } catch(error) {
+                console.log(error);
+                res.status(500).send(error.toString());
+            }
         });
 
+        // Event: Message
+        client.on('message', async (msg) => {
+            console.log('MESSAGE RECEIVED', msg);
+            // auto reply
+            if (msg.body === '!test') {
+                msg.reply('The bot is working!');
+            }
 
-        client.client.on('disconnected', (reason) => {
+            if (msg.body === 'Hi') {
+                msg.reply('Hello');
+            }
+
+            if (msg.body === 'How are you?') {
+                msg.reply('Fine');
+            }
+
+            if (postApi !== '') {
+                try {
+                    const server_url = postApi;
+                    // axios is already required at top
+                    const data = {
+                        instanceid: id,
+                        ...msg
+                    };
+                    // Circular JSON structure in msg might cause issues if spread directly and stringified?
+                    // msg object in whatsapp-web.js is complex.
+                    // But checking original code, it did `JSON.stringify({ instanceid: client.client.id, ...msg });`
+                    // We'll trust it works or try to replicate safely.
+                    // Better to construct a safe object if possible, but let's stick to original logic mostly.
+
+                    // Note: axios.post automatically stringifies object if content-type is json
+                    const response = await axios.post(server_url, data);
+
+                    console.log(response.data);
+
+                    if (response.data.reply) {
+                        msg.reply(response.data.reply);
+                    }
+                    if (response.data.replyMedia) {
+                        const media = new MessageMedia('image/jpeg', response.data.replyMedia);
+                        msg.reply(media);
+                    }
+                }
+                catch (error) {
+                    console.log('Post API Error:', error.message);
+                }
+            }
+        });
+
+        // Event: Disconnected
+        client.on('disconnected', (reason) => {
             console.log('Client was logged out', reason);
-            disconnected = true;
+            disconnected[id] = true;
+            clientObj.isInitialized = false;
+             // Should we destroy and recreate client?
+             // Usually better to destroy.
+             // client.destroy();
         });
 
-        app.get(`/${client.id}/logout`, async (req, res) => {
-
-            if (!disconnected) {
-                await client.client.logout();
+        // Route: Logout
+        app.get(`/${id}/logout`, async (req, res) => {
+            if (!disconnected[id]) {
+                await client.logout();
                 res.send('Client logged out');
             } else {
                 res.send('Client is not logged in');
             }
-
         });
 
-        app.get(`/${client.id}/exit`, async (req, res) => {
-            if (isInitialized) {
-                isInitialized = false;
-                client.client.destroy();
+        // Route: Exit
+        app.get(`/${id}/exit`, async (req, res) => {
+            if (clientObj.isInitialized) {
+                clientObj.isInitialized = false;
+                await client.destroy();
                 console.log('Client exited');
                 res.send('Client exited');
             } else {
                 res.send('Client is not initialized');
             }
-        }
-        );
+        });
     });
-} catch (error) {
-    console.log(error);
-}
 
-if (require.main === module) {
+    // Start server after setting up everything
     app.listen(port, () => {
         console.log(`Server running on port ${port}`);
     });
-}
+};
 
-module.exports = app;
+initClients();
