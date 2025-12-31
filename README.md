@@ -104,6 +104,34 @@ Explore other components of the research portfolio:
 
 ---
 
+---
+
+## 🧪 Testing
+
+This project uses `jest`, `supertest` and mocks for robust automated testing without physical devices.
+
+### Running Tests
+
+Execute the full test suite with:
+
+```bash
+npm test
+```
+
+### Test Reports
+
+A detailed HTML report is automatically generated at `test-report.html` after each run. This file includes:
+-   **Execution Time**: Performance metrics for each test.
+-   **Status**: Visual indicators for passed/failed tests.
+-   **Coverage**: (If configured) Code coverage validation.
+
+The testing architecture mocks `whatsapp-web.js` to simulate:
+-   Client initialization and authentication.
+-   Message transmission via API.
+-   Incoming message event handling and auto-replies.
+
+---
+
 ## 📄 License
 
 Distributed under the **GNU GPL v3.0** License. See `LICENSE` for more information.
