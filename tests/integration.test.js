@@ -35,7 +35,7 @@ const app = require('../app');
 
 describe('WhatsApp Bot Integration Tests', () => {
 
-    // We don't clear mocks automatically because we need the history of 'on' calls 
+    // We don't clear mocks automatically because we need the history of 'on' calls
     // that happened during module loading to trigger events.
     // beforeEach(() => {
     //    jest.clearAllMocks();

@@ -323,9 +323,13 @@ const initClients = async () => {
     });
 
     // Start server after setting up everything
-    app.listen(port, () => {
-        console.log(`Server running on port ${port}`);
-    });
+    if (require.main === module) {
+        app.listen(port, () => {
+            console.log(`Server running on port ${port}`);
+        });
+    }
 };
 
 initClients();
+
+module.exports = app;
