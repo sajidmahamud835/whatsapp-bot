@@ -2,7 +2,7 @@
 
 # 🤖 WhatsApp Bot — Automated Communication Protocol
 
-[![Node.js](https://img.shields.io/badge/Node.js-16+-green?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge&logo=node.js)](https://nodejs.org/)
 [![WhatsApp-Web.js](https://img.shields.io/badge/Library-whatsapp--web.js-25D366?style=for-the-badge&logo=whatsapp)](https://wwebjs.dev/)
 [![Docker](https://img.shields.io/badge/Deploy-Docker-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 
@@ -73,36 +73,66 @@ The bot operates by POSTing incoming message packets to your defined webhook and
 
 ## 🚀 Deployment Guide
 
-### Option 1: Local Machine
-1.  **Clone**: `git clone https://github.com/sajidmahamud835/whatsapp-bot.git`
-2.  **Install**: `npm install`
-3.  **Run**: `npm start`
-4.  **Connect**: Scan QR code at `http://localhost:3000`.
+### Prerequisites
 
-### Option 2: Cloud Deployment (Heroku)
-1.  **CLI**: Install Heroku CLI.
-2.  **Create**: `heroku create` inside the repo.
-3.  **Push**: `git push heroku master`.
-4.  **Scale**: `heroku ps:scale web=1`.
+- **Node.js**: Version 18.x or higher is recommended.
+- **npm**: Version 9.x or higher.
+- **Chromium/Chrome**: Required by Puppeteer (handled automatically by `puppeteer-chromium-resolver`).
 
-### Option 3: VPS (aaPanel/Linux)
-1.  Upload files to `/www/wwwroot/bot-folder`.
-2.  Set `.env` port (e.g., `PORT=8585`).
-3.  Run via Node Project manager or PM2.
+### Installation
 
-*(Detailed guides for Vercel and aaPanel included in legacy docs)*
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd whatsapp-bot
+   ```
 
----
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## 🤝 Related Projects
+3. Configure Environment Variables:
+   - Ensure a `.env` file exists in the root directory.
+   - Example content:
+     ```
+     PORT=8585
+     POST_API=https://your-api-url.com/webhook.php
+     KEY=YOUR_SECRET_KEY
+     ```
 
-Explore other components of the research portfolio:
+### Running the Application
 
-1.  **[MarketSync-EA](https://github.com/sajidmahamud835/MarketSync-EA)** - Use this bot to send trade execution alerts to your phone.
-2.  **[InspectHealth](https://github.com/sajidmahamud835/inspecthealth)** - Send appointment reminders to patients.
-3.  **[BankSync](https://github.com/sajidmahamud835/banksync)** - 2FA authentication delivery via WhatsApp.
+#### Development
+To run the application in development mode with auto-reload:
+```bash
+npm run dev
+```
 
----
+#### Production
+To start the application:
+```bash
+npm start
+```
+
+### Usage
+
+1. Start the server.
+2. The application will initialize 6 WhatsApp clients by default.
+3. Access `http://localhost:8585/<client_id>/qr` (e.g., `http://localhost:8585/1/qr`) to view the QR code for authentication.
+4. Scan the QR code with your WhatsApp mobile app.
+5. Once authenticated, you can use the API endpoints to send messages.
+
+### API Endpoints
+
+- `GET /<client_id>`: Check client status.
+- `GET /<client_id>/init`: Initialize the client.
+- `GET /<client_id>/qr`: Get QR code for login.
+- `GET /<client_id>/logout`: Logout the client.
+- `POST /<client_id>/send`: Send a text message.
+  - Body: `{ "number": "1234567890@c.us", "message": "Hello" }`
+- `POST /<client_id>/sendMedia`: Send a media message.
+  - Body: `{ "number": "...", "mediaUrl": "...", "caption": "..." }`
 
 ---
 
@@ -129,6 +159,26 @@ The testing architecture mocks `whatsapp-web.js` to simulate:
 -   Client initialization and authentication.
 -   Message transmission via API.
 -   Incoming message event handling and auto-replies.
+
+---
+
+## 📜 Changelog
+
+### Project Resurrection (Current)
+- **Dependency Updates**:
+  - Upgraded `express` to v5.2.1.
+  - Upgraded `whatsapp-web.js` to v1.34.2.
+  - Upgraded `puppeteer-chromium-resolver` to v24.0.3.
+  - Upgraded `nodemon` to v3.1.11.
+  - Upgraded `dotenv`, `cors`, `qrcode`, `axios` to latest versions.
+  - Removed unused dependencies (`mysql`, `fs`).
+- **Code Refactoring**:
+  - Modernized `app.js` (replaced `var` with `const`/`let`).
+  - Improved route definitions to prevent memory leaks and dynamic route creation issues.
+  - Fixed `puppeteer-chromium-resolver` initialization (async/await).
+  - Ensured compatibility with latest `whatsapp-web.js` (`LocalAuth`).
+- **Security**:
+  - Audited and fixed high-severity vulnerabilities in dependencies.
 
 ---
 
