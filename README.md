@@ -7,15 +7,146 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge&logo=node.js)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Baileys](https://img.shields.io/badge/Engine-Baileys-25D366?style=for-the-badge&logo=whatsapp)](https://github.com/WhiskeySockets/Baileys)
-[![Version](https://img.shields.io/badge/version-4.0.0-brightgreen?style=for-the-badge)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-4.1.0-brightgreen?style=for-the-badge)](./CHANGELOG.md)
 
-**A full-stack WhatsApp automation platform — REST API + WebSocket + CLI + Config system.**
+**A full-stack WhatsApp automation platform — REST API + WebSocket + CLI + AI + Cron.**
 
-*Multi-Client • Webhook-Driven • Event-Based • API-First • No Puppeteer*
+*Multi-Client • Dual Engine • AI Auto-Reply • Scheduled Jobs • Webhook-Driven • API-First*
 
 [Report Bug](https://github.com/sajidmahamud835/whatsapp-bot/issues) · [Request Feature](https://github.com/sajidmahamud835/whatsapp-bot/issues)
 
 </div>
+
+---
+
+## ✨ v4.1 — Phase 2: Dual Engine + AI + Cron
+
+### 🔌 Dual Engine
+
+- **Baileys Engine** — WebSocket-based (free, no Meta approval needed)
+- **Official Cloud API Engine** — Meta's WhatsApp Business API (requires Meta app)
+
+Configure per session in `config.json`:
+```json
+{
+  "sessions": [
+    { "id": "1", "engine": "baileys" },
+    {
+      "id": "2",
+      "engine": "official",
+      "official": {
+        "phoneNumberId": "YOUR_PHONE_NUMBER_ID",
+        "accessToken": "YOUR_ACCESS_TOKEN",
+        "verifyToken": "YOUR_VERIFY_TOKEN"
+      }
+    }
+  ]
+}
+```
+
+Meta webhook endpoints (no auth required):
+- `GET /webhook/whatsapp` — Meta hub verification
+- `POST /webhook/whatsapp` — Incoming messages from Meta
+
+### 🤖 AI Auto-Reply
+
+Automatically reply to incoming messages using any AI provider.
+
+**Supported providers:** OpenAI, OpenRouter, Anthropic, Google Gemini, Ollama (any OpenAI-compatible)
+
+Enable in `config.json`:
+```json
+{
+  "ai": {
+    "enabled": true,
+    "defaultProvider": "openai",
+    "systemPrompt": "You are a helpful WhatsApp assistant.",
+    "maxTokens": 500,
+    "temperature": 0.7,
+    "providers": {
+      "openai": {
+        "type": "openai",
+        "apiKey": "sk-...",
+        "model": "gpt-4o-mini"
+      },
+      "anthropic": {
+        "type": "anthropic",
+        "apiKey": "sk-ant-...",
+        "model": "claude-3-haiku-20240307"
+      },
+      "google": {
+        "type": "google",
+        "apiKey": "AIza...",
+        "model": "gemini-1.5-flash"
+      },
+      "ollama": {
+        "type": "ollama",
+        "apiKey": "ollama",
+        "baseUrl": "http://localhost:11434/v1",
+        "model": "llama3.2"
+      }
+    }
+  }
+}
+```
+
+**AI CLI commands:**
+```bash
+wa-convo ai providers          # Show configured providers
+wa-convo ai test "Hello!"      # Send test message
+wa-convo ai test "Hi" -p openai  # Use specific provider
+wa-convo ai prompt "You are..."  # Update system prompt
+wa-convo ai enable             # Enable AI auto-reply
+wa-convo ai disable            # Disable AI auto-reply
+```
+
+**AI API endpoints:**
+```
+GET  /ai/providers             # List providers & config
+POST /ai/test                  # {message, provider?}
+PUT  /ai/prompt                # {prompt}
+PUT  /ai/config                # {enabled, defaultProvider, maxTokens, temperature}
+DEL  /ai/history/:jid          # Clear conversation history
+```
+
+### ⏰ Cron Jobs
+
+Schedule recurring WhatsApp actions.
+
+**Actions:** `sendMessage`, `broadcast`, `postStatus`
+
+**Cron CLI commands:**
+```bash
+wa-convo cron list                    # List all jobs
+wa-convo cron add                     # Interactive creation
+wa-convo cron add --name "Morning" --schedule "0 9 * * *" --client 1 --action sendMessage
+wa-convo cron run <id>                # Run job immediately
+wa-convo cron delete <id>             # Delete job
+```
+
+**Cron API endpoints:**
+```
+GET    /cron              # List all jobs
+POST   /cron              # Create job {name, schedule, clientId, action, params}
+PUT    /cron/:id          # Update job
+DELETE /cron/:id          # Delete job
+POST   /cron/:id/run      # Run job now
+```
+
+**Example cron job (broadcast every morning at 9am):**
+```json
+{
+  "name": "Morning Broadcast",
+  "schedule": "0 9 * * *",
+  "clientId": "1",
+  "action": "broadcast",
+  "params": {
+    "numbers": ["8801XXXXXXXXX", "8801YYYYYYYYY"],
+    "message": "Good morning! 🌅"
+  },
+  "enabled": true
+}
+```
 
 ---
 

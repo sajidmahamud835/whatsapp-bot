@@ -1,5 +1,39 @@
 # Changelog
 
+## [4.1.0] - 2026-03-29
+
+### Added — Phase 2: Dual Engine, AI Integration, Cron System
+
+#### 2A: Dual Engine (`src/core/engines/`)
+- **`engines/types.ts`** — `WhatsAppEngine` interface, `OfficialEngineConfig`, `EngineSessionConfig`
+- **`engines/baileys.ts`** — `BaileysEngine` class extracted from `client-manager.ts`, implements `WhatsAppEngine`
+- **`engines/official.ts`** — `OfficialEngine` for WhatsApp Cloud API (Meta): sendText, sendMedia, sendLocation, sendReaction, sendTemplate, markRead, handleWebhook
+- **`api/routes/webhook.ts`** — `GET /webhook/whatsapp` (Meta hub verification), `POST /webhook/whatsapp` (parse Meta payload → emit events)
+- **`client-manager.ts`** — Updated with `createEngine()` factory, `engines` Map, auto-selects Baileys or Official per session config
+
+#### 2B: AI Integration (`src/core/ai/`)
+- **`ai/types.ts`** — `AIProvider`, `AIMessage`, `AIProviderOptions` interfaces
+- **`ai/providers/openai.ts`** — OpenAI-compatible provider (works with OpenAI, OpenRouter, Ollama, Together)
+- **`ai/providers/anthropic.ts`** — Anthropic Messages API provider
+- **`ai/providers/google.ts`** — Google Gemini generateContent API provider
+- **`ai/manager.ts`** — `AIManager` singleton: loads providers from config, fallback chain, per-JID conversation history (last 10 messages), `chat()`, `clearHistory()`, `reload()`
+- **`client-manager.ts`** — Wires `message.received` event → AI auto-reply when `ai.enabled = true`
+- **`api/routes/ai.ts`** — `GET /ai/providers`, `POST /ai/test`, `PUT /ai/prompt`, `PUT /ai/config`, `DELETE /ai/history/:jid`
+- **`cli/commands/ai.ts`** — `wa-convo ai providers`, `wa-convo ai test`, `wa-convo ai prompt`, `wa-convo ai enable/disable`
+
+#### 2C: Cron System (`src/core/cron/`)
+- **`cron/manager.ts`** — `CronManager` singleton: dynamic `node-cron` import, `addJob()`, `updateJob()`, `deleteJob()`, `runJobNow()`, `listJobs()`, `stopAll()`. Actions: `sendMessage`, `broadcast`, `postStatus`
+- **`api/routes/cron.ts`** — `GET /cron`, `POST /cron`, `PUT /cron/:id`, `DELETE /cron/:id`, `POST /cron/:id/run`
+- **`cli/commands/cron.ts`** — `wa-convo cron list`, `wa-convo cron add`, `wa-convo cron run`, `wa-convo cron delete`
+
+#### Config / Meta
+- `config/config.json` — Added `sessions[]` array, `ai.providers` example entries for all providers
+- `package.json` — Added `node-cron@^3.0.3`, `@types/node-cron@^3.0.11`, bumped version to `4.1.0`
+- `cli/utils.ts` — Added `apiRequest()` generic helper
+- `api/server.ts` — Registers webhook (public), ai, cron routes; initializes cron manager; updated startup log to v4.1.0
+
+---
+
 ## [4.0.0] - 2026-03-29
 
 ### ⚠️ Breaking Changes

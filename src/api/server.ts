@@ -20,6 +20,12 @@ import statusRouter from './routes/status.js';
 import presenceRouter from './routes/presence.js';
 import privacyRouter from './routes/privacy.js';
 import configRouter from './routes/config.js';
+import webhookRouter from './routes/webhook.js';
+import aiRouter from './routes/ai.js';
+import cronRouter from './routes/cron.js';
+
+// ─── Managers ─────────────────────────────────────────────────────────────────
+import { cronManager } from '../core/cron/manager.js';
 
 // ─── Initialize config & logger first ────────────────────────────────────────
 config.load();
@@ -45,12 +51,15 @@ app.get('/', (_req, res) => {
   res.json({
     name: 'WA Convo',
     description: 'WhatsApp Automation Platform',
-    version: '4.0.0',
-    engine: 'Baileys (WebSocket)',
+    version: '4.1.0',
+    engine: 'Baileys + Official Cloud API',
     docs: 'https://github.com/sajidmahamud835/whatsapp-bot',
     websocket: `ws://${host}:${port}/ws`,
   });
 });
+
+// Webhook route is public (no auth — Meta won't send auth headers)
+app.use(webhookRouter);
 
 // ─── Protected Routes ─────────────────────────────────────────────────────────
 
@@ -64,6 +73,8 @@ app.use(statusRouter);
 app.use(presenceRouter);
 app.use(privacyRouter);
 app.use(configRouter);
+app.use(aiRouter);
+app.use(cronRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 
@@ -81,28 +92,37 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 
-function start(): void {
-  // Initialize WhatsApp client sessions
+async function start(): Promise<void> {
+  // Initialize WhatsApp client sessions (also initializes AI manager)
   initializeSessions();
+
+  // Initialize cron manager
+  await cronManager.initialize();
 
   // Setup WebSocket
   setupWebSocket(httpServer);
 
   // Start HTTP server
   httpServer.listen(port, host, () => {
-    log.info({ port, host }, '🚀 WA Convo v4.0.0 started');
+    log.info({ port, host }, '🚀 WA Convo v4.1.0 started');
     log.info('   Health:    http://%s:%d/health', host, port);
     log.info('   Clients:   http://%s:%d/clients', host, port);
     log.info('   WebSocket: ws://%s:%d/ws', host, port);
     log.info('   Config:    http://%s:%d/config', host, port);
+    log.info('   AI:        http://%s:%d/ai/providers', host, port);
+    log.info('   Cron:      http://%s:%d/cron', host, port);
+    log.info('   Webhook:   http://%s:%d/webhook/whatsapp', host, port);
 
     // Also log to console for visibility
-    console.log(`\n🟢 WA Convo v4.0.0 — WhatsApp Automation Platform`);
+    console.log(`\n🟢 WA Convo v4.1.0 — WhatsApp Automation Platform`);
     console.log(`   API:       http://${host}:${port}/`);
     console.log(`   Health:    http://${host}:${port}/health`);
     console.log(`   Clients:   http://${host}:${port}/clients`);
     console.log(`   WebSocket: ws://${host}:${port}/ws`);
-    console.log(`   Config:    http://${host}:${port}/config\n`);
+    console.log(`   Config:    http://${host}:${port}/config`);
+    console.log(`   AI:        http://${host}:${port}/ai/providers`);
+    console.log(`   Cron:      http://${host}:${port}/cron`);
+    console.log(`   Webhook:   http://${host}:${port}/webhook/whatsapp\n`);
 
     eventBus.emit('server.started', { port, host });
   });
@@ -112,15 +132,20 @@ function start(): void {
 process.on('SIGTERM', () => {
   log.info('SIGTERM received — shutting down');
   eventBus.emit('server.stopped', {});
+  cronManager.stopAll();
   httpServer.close(() => process.exit(0));
 });
 
 process.on('SIGINT', () => {
   log.info('SIGINT received — shutting down');
   eventBus.emit('server.stopped', {});
+  cronManager.stopAll();
   httpServer.close(() => process.exit(0));
 });
 
-start();
+start().catch(err => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
+});
 
 export default app;

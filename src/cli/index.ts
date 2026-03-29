@@ -19,6 +19,18 @@ import {
 import { contactsListCommand, contactsCheckCommand } from './commands/contacts.js';
 import { groupsListCommand, groupsCreateCommand } from './commands/groups.js';
 import { logsCommand } from './commands/logs.js';
+import {
+  aiProvidersCommand,
+  aiTestCommand,
+  aiPromptCommand,
+  aiEnableCommand,
+} from './commands/ai.js';
+import {
+  cronListCommand,
+  cronRunCommand,
+  cronDeleteCommand,
+  cronAddCommand,
+} from './commands/cron.js';
 
 // Load config first
 import { config } from '../core/config.js';
@@ -29,7 +41,7 @@ const program = new Command();
 program
   .name('wa-convo')
   .description('WA Convo — WhatsApp Automation Platform CLI')
-  .version('4.0.0');
+  .version('4.1.0');
 
 // ─── start ────────────────────────────────────────────────────────────────────
 
@@ -168,6 +180,93 @@ groupsCmd
   .description('Create a new group')
   .action(async (clientId: string, name: string, participants: string[]) => {
     await groupsCreateCommand(clientId, name, participants);
+  });
+
+// ─── ai ───────────────────────────────────────────────────────────────────────
+
+const aiCmd = program
+  .command('ai')
+  .description('Manage AI auto-reply integration');
+
+aiCmd
+  .command('providers')
+  .description('Show configured AI providers and settings')
+  .action(async () => {
+    await aiProvidersCommand();
+  });
+
+aiCmd
+  .command('test <message>')
+  .description('Send a test message to the AI')
+  .option('-p, --provider <name>', 'Use specific provider')
+  .action(async (message: string, options: { provider?: string }) => {
+    await aiTestCommand(message, options.provider);
+  });
+
+aiCmd
+  .command('prompt <prompt>')
+  .description('Update the AI system prompt')
+  .action(async (prompt: string) => {
+    await aiPromptCommand(prompt);
+  });
+
+aiCmd
+  .command('enable')
+  .description('Enable AI auto-reply')
+  .action(async () => {
+    await aiEnableCommand(true);
+  });
+
+aiCmd
+  .command('disable')
+  .description('Disable AI auto-reply')
+  .action(async () => {
+    await aiEnableCommand(false);
+  });
+
+// ─── cron ─────────────────────────────────────────────────────────────────────
+
+const cronCmd = program
+  .command('cron')
+  .description('Manage scheduled cron jobs');
+
+cronCmd
+  .command('list')
+  .description('List all cron jobs')
+  .action(async () => {
+    await cronListCommand();
+  });
+
+cronCmd
+  .command('add')
+  .description('Create a new cron job (interactive)')
+  .option('--name <name>', 'Job name')
+  .option('--schedule <schedule>', 'Cron schedule (e.g. "0 9 * * *")')
+  .option('--client <clientId>', 'Client ID')
+  .option('--action <action>', 'Action (sendMessage|broadcast|postStatus)')
+  .option('--params <json>', 'JSON params for the action')
+  .action(async (options: { name?: string; schedule?: string; client?: string; action?: string; params?: string }) => {
+    await cronAddCommand({
+      name: options.name,
+      schedule: options.schedule,
+      clientId: options.client,
+      action: options.action,
+      params: options.params,
+    });
+  });
+
+cronCmd
+  .command('run <id>')
+  .description('Run a cron job immediately')
+  .action(async (id: string) => {
+    await cronRunCommand(id);
+  });
+
+cronCmd
+  .command('delete <id>')
+  .description('Delete a cron job')
+  .action(async (id: string) => {
+    await cronDeleteCommand(id);
   });
 
 // ─── logs ─────────────────────────────────────────────────────────────────────

@@ -89,6 +89,28 @@ export function printJson(data: unknown): void {
   console.log(JSON.stringify(data, null, 2));
 }
 
+// ─── Generic API request helper ───────────────────────────────────────────────
+
+export async function apiRequest<T = unknown>(
+  path: string,
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' = 'GET',
+  body?: unknown,
+): Promise<T> {
+  const base = getApiBase();
+  const res = await fetch(`${base}${path}`, {
+    method,
+    headers: buildHeaders(),
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+
+  const data = await res.json() as T;
+  if (!res.ok) {
+    const msg = (data as any)?.message ?? `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return data;
+}
+
 // ─── API error handling ───────────────────────────────────────────────────────
 
 export function handleApiError(err: unknown): never {

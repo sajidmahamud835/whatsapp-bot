@@ -16,6 +16,10 @@ import type { ClientSession, WebhookPayload } from './types.js';
 import { config } from './config.js';
 import { baileysLogger, childLogger } from './logger.js';
 import { eventBus } from './events.js';
+import type { WhatsAppEngine } from './engines/types.js';
+import { BaileysEngine } from './engines/baileys.js';
+import { OfficialEngine } from './engines/official.js';
+import { aiManager } from './ai/manager.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const log = childLogger('client-manager');
@@ -34,6 +38,27 @@ function getClientCount(): number {
 }
 
 export const sessions = new Map<string, ClientSession>();
+
+// ─── Engine registry ──────────────────────────────────────────────────────────
+
+export const engines = new Map<string, WhatsAppEngine>();
+
+/**
+ * Create a WhatsApp engine for the given session based on config.
+ * Falls back to Baileys if no engine config or engine = "baileys".
+ */
+export function createEngine(id: string): WhatsAppEngine {
+  // Check if there's a sessions config entry for this id
+  const sessionConfigs = config.get<any[]>('sessions') ?? [];
+  const sessionCfg = sessionConfigs.find((s: any) => String(s.id) === String(id));
+
+  if (sessionCfg?.engine === 'official' && sessionCfg?.official) {
+    return new OfficialEngine(id, sessionCfg.official);
+  }
+
+  // Default: Baileys
+  return new BaileysEngine(id);
+}
 
 // ─── JID helpers ─────────────────────────────────────────────────────────────
 
@@ -232,6 +257,28 @@ export function initializeSessions(): void {
     sessions.set(id, createEmptySession(id));
   }
   log.info('%d client slot(s) ready. Use /:id/init to start each one.', count);
+
+  // Initialize AI manager
+  aiManager.initialize();
+
+  // Wire AI auto-reply
+  eventBus.on('message.received', async (event) => {
+    if (!aiManager.isEnabled()) return;
+    if (!event.body || event.body.startsWith('!')) return; // skip commands
+
+    const session = sessions.get(event.clientId);
+    if (!session?.isReady || !session.sock) return;
+
+    try {
+      const reply = await aiManager.chat(event.from, event.body);
+      if (reply) {
+        await session.sock.sendMessage(event.from, { text: reply });
+        log.debug({ clientId: event.clientId, to: event.from }, 'AI reply sent');
+      }
+    } catch (err) {
+      log.error({ clientId: event.clientId }, 'AI reply error: %s', err instanceof Error ? err.message : String(err));
+    }
+  });
 }
 
 export function getSession(id: string): ClientSession | undefined {
@@ -243,6 +290,13 @@ export async function startSession(id: string): Promise<void> {
   if (!session) throw new Error(`Session ${id} not found`);
   if (session.isInitialized) throw new Error(`Session ${id} already initializing/active`);
   session.isInitialized = true;
+
+  // Create and register engine
+  const engine = createEngine(id);
+  engines.set(id, engine);
+  // Store engine reference on session for webhook routing
+  (session as any).engine = engine;
+
   await connectToWhatsApp(session);
 }
 
