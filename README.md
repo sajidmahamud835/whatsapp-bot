@@ -5,6 +5,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge&logo=node.js)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Baileys](https://img.shields.io/badge/Library-Baileys-25D366?style=for-the-badge&logo=whatsapp)](https://github.com/WhiskeySockets/Baileys)
+[![Version](https://img.shields.io/badge/version-3.1.0-orange?style=for-the-badge)](./CHANGELOG.md)
 
 **A programmable, TypeScript-first automation bridge between the WhatsApp network and external REST APIs.**
 
@@ -13,6 +14,18 @@
 [Report Bug](https://github.com/sajidmahamud835/whatsapp-bot/issues) · [Request Feature](https://github.com/sajidmahamud835/whatsapp-bot/issues)
 
 </div>
+
+---
+
+## ✨ v3.1 Highlights — Complete Baileys Feature Set
+
+- ✅ **Messages** — reactions, polls, view-once, edit, delete, reply, forward, location, vCard, sticker, voice note
+- ✅ **Groups** — create, add/remove/promote/demote members, update metadata, invite links, settings
+- ✅ **Contacts** — check existence, profile pic, about/status, business profile, block/unblock
+- ✅ **Status/Stories** — post text, image, and video statuses to `status@broadcast`
+- ✅ **Presence** — set online/typing/recording, subscribe to contact presence
+- ✅ **Privacy** — disappearing messages, archive, pin, mute chats
+- ✅ **Labels** — list, create, assign labels to chats
 
 ---
 
@@ -135,6 +148,119 @@ Set `API_KEY` in your `.env` to enable. Omit it to run without auth (development
 | `GET` | `/:id/contacts` | — | List contacts |
 | `GET` | `/:id/chats` | `?page=1&limit=20` | Paginated chat list |
 | `GET` | `/:id/chats/:chatId/messages` | `?page=1&limit=20` | Paginated messages |
+
+---
+
+### 💬 Advanced Messages (`src/routes/messages.ts`)
+
+| Method | Path | Body | Description |
+|---|---|---|---|
+| `POST` | `/:id/messages/react` | `{ key, emoji }` | Send reaction emoji to a message |
+| `POST` | `/:id/messages/poll` | `{ number, title, options[], singleSelect? }` | Create a poll |
+| `POST` | `/:id/messages/viewonce` | `{ number, media, mediaType?, caption?, mimetype? }` | Send view-once image/video |
+| `POST` | `/:id/messages/edit` | `{ key, newText }` | Edit a sent message |
+| `POST` | `/:id/messages/delete` | `{ key }` | Delete message for everyone |
+| `POST` | `/:id/messages/reply` | `{ key, text }` | Reply/quote a specific message |
+| `POST` | `/:id/messages/forward` | `{ key, to }` | Forward a message to another chat |
+| `POST` | `/:id/messages/location` | `{ number, latitude, longitude, name? }` | Send location |
+| `POST` | `/:id/messages/contact` | `{ number, name, contactNumber }` | Send vCard contact |
+| `POST` | `/:id/messages/sticker` | `{ number, sticker }` | Send sticker (URL or base64) |
+| `POST` | `/:id/messages/voice` | `{ number, audio, mimetype? }` | Send voice note (URL or base64, ptt) |
+| `POST` | `/:id/messages/read` | `{ keys[] }` | Mark messages as read |
+
+**Message key format:**
+```json
+{
+  "remoteJid": "8801XXXXXXXXX@s.whatsapp.net",
+  "fromMe": true,
+  "id": "ABCDEF1234567890"
+}
+```
+
+---
+
+### 👥 Groups (`src/routes/groups.ts`)
+
+| Method | Path | Body | Description |
+|---|---|---|---|
+| `POST` | `/:id/groups/create` | `{ name, participants[] }` | Create a group |
+| `POST` | `/:id/groups/join` | `{ inviteCode }` | Join group via invite link/code |
+| `GET` | `/:id/groups` | — | List all groups with participant counts |
+| `GET` | `/:id/groups/:groupId` | — | Get group metadata |
+| `GET` | `/:id/groups/:groupId/invite` | — | Get invite link |
+| `POST` | `/:id/groups/:groupId/revoke-invite` | — | Revoke and regenerate invite link |
+| `POST` | `/:id/groups/:groupId/add` | `{ participants[] }` | Add participants |
+| `POST` | `/:id/groups/:groupId/remove` | `{ participants[] }` | Remove participants |
+| `POST` | `/:id/groups/:groupId/promote` | `{ participants[] }` | Make participants admin |
+| `POST` | `/:id/groups/:groupId/demote` | `{ participants[] }` | Revoke admin from participants |
+| `PUT` | `/:id/groups/:groupId` | `{ name?, description?, photo? }` | Update group name/description/photo |
+| `PUT` | `/:id/groups/:groupId/settings` | `{ announcement?, restrict? }` | Update who can send/edit |
+
+**Settings fields:**
+- `announcement: true` — only admins can send messages
+- `restrict: true` — only admins can edit group info
+
+---
+
+### 📞 Contacts (`src/routes/contacts.ts`)
+
+| Method | Path | Body | Description |
+|---|---|---|---|
+| `POST` | `/:id/contacts/check` | `{ numbers[] }` | Check if numbers are on WhatsApp |
+| `GET` | `/:id/contacts/:jid/profile-pic` | — | Get profile picture URL |
+| `GET` | `/:id/contacts/:jid/about` | — | Get about/status text |
+| `GET` | `/:id/contacts/:jid/business` | — | Get business profile |
+| `POST` | `/:id/contacts/block` | `{ number }` | Block a contact |
+| `POST` | `/:id/contacts/unblock` | `{ number }` | Unblock a contact |
+
+### 🏷️ Labels (`src/routes/contacts.ts`)
+
+| Method | Path | Body | Description |
+|---|---|---|---|
+| `GET` | `/:id/labels` | — | List all labels |
+| `POST` | `/:id/labels` | `{ name, color? }` | Create a label |
+| `POST` | `/:id/labels/:labelId/assign` | `{ jid, type? }` | Assign/remove label from chat |
+
+---
+
+### 📸 Status / Stories (`src/routes/status.ts`)
+
+| Method | Path | Body | Description |
+|---|---|---|---|
+| `POST` | `/:id/status/text` | `{ text, backgroundColor?, font? }` | Post text status |
+| `POST` | `/:id/status/image` | `{ image, caption? }` | Post image status (URL or base64) |
+| `POST` | `/:id/status/video` | `{ video, caption? }` | Post video status (URL or base64) |
+
+---
+
+### 👁️ Presence (`src/routes/presence.ts`)
+
+| Method | Path | Body | Description |
+|---|---|---|---|
+| `POST` | `/:id/presence/update` | `{ presence, jid? }` | Set presence (available/unavailable/composing/recording/paused) |
+| `POST` | `/:id/presence/subscribe` | `{ number }` | Subscribe to contact's presence events |
+
+---
+
+### 🔒 Privacy / Chat Modify (`src/routes/privacy.ts`)
+
+| Method | Path | Body | Description |
+|---|---|---|---|
+| `POST` | `/:id/chats/:jid/disappearing` | `{ expiration }` | Enable/disable disappearing messages (seconds; 0 = off) |
+| `POST` | `/:id/chats/:jid/archive` | — | Archive a chat |
+| `POST` | `/:id/chats/:jid/unarchive` | — | Unarchive a chat |
+| `POST` | `/:id/chats/:jid/pin` | — | Pin a chat |
+| `POST` | `/:id/chats/:jid/unpin` | — | Unpin a chat |
+| `POST` | `/:id/chats/:jid/mute` | `{ duration }` | Mute chat (ms from now; -1 = forever) |
+| `POST` | `/:id/chats/:jid/unmute` | — | Unmute a chat |
+
+**Disappearing message presets:**
+| Value | Duration |
+|---|---|
+| `0` | Disabled |
+| `86400` | 24 hours |
+| `604800` | 7 days |
+| `7776000` | 90 days |
 
 ---
 
