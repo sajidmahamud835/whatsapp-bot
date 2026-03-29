@@ -1,14 +1,14 @@
 <div align="center">
 
-# 🤖 WhatsApp Bot — Automated Communication Protocol
+# 🤖 WhatsApp Bot — Multi-Client REST API
 
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![WhatsApp-Web.js](https://img.shields.io/badge/Library-whatsapp--web.js-25D366?style=for-the-badge&logo=whatsapp)](https://wwebjs.dev/)
-[![Docker](https://img.shields.io/badge/Deploy-Docker-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 
-**A programmable automation agent acting as a bridge between the WhatsApp network and external REST APIs.**
+**A programmable, TypeScript-first automation bridge between the WhatsApp network and external REST APIs.**
 
-*Scalable • Event-Driven • Multi-Platform*
+*Scalable • Multi-Client • Webhook-Driven • API-Key Protected*
 
 [Report Bug](https://github.com/sajidmahamud835/whatsapp-bot/issues) · [Request Feature](https://github.com/sajidmahamud835/whatsapp-bot/issues)
 
@@ -16,169 +16,165 @@
 
 ---
 
-## 🔬 About The Project
+## ✨ v2 Highlights
 
-**WhatsApp Bot** is an exploration into "Conversational Commerce" and notification automation. By reverse-engineering the WhatsApp Web protocol, this tool allows developers to programmatically interact with the messaging platform without official business API limitations (for research/testing purposes).
-
-The core innovation is the **Webhook Bridge Pattern**, essentially turning a WhatsApp account into a dumb terminal that forwards all events to a sophisticated backend brain (like an AI model or a CRM) and blindly outputs the responses.
-
-### 🎯 Key Implementations
-1.  **Session Persistence**: Handling authentication state (QR code scanning) and restoring sessions across server restarts.
-2.  **Universal Deployment**: Configured to run on varied environments: stateless serverless functions (Vercel) or stateful containers (Heroku, Linux/aaPanel).
-3.  **Media Handling**: encoding and decoding base64 streams to send/receive images and documents programmatically.
+- ✅ **Full TypeScript rewrite** — strict mode, proper types throughout
+- ✅ **Dynamic client count** — configure via `CLIENT_COUNT` env, no code changes needed
+- ✅ **API key authentication** — Bearer token middleware on all endpoints
+- ✅ **Rate limiting** — configurable per-IP throttle
+- ✅ **Webhook bridge** — forward all incoming messages to your server, receive reply commands
+- ✅ **Paginated endpoints** — chats & messages support `?page=&limit=` params
+- ✅ **Health check** — `GET /health` for monitoring
+- ✅ **No puppeteer-chromium-resolver** — removed; whatsapp-web.js bundles puppeteer/chromium
+- ✅ **Proper error responses** — JSON errors with HTTP status codes throughout
 
 ---
 
-## ⚙️ REST API Protocol
+## 🚀 Quick Start
 
-The bot operates by POSTing incoming message packets to your defined webhook and expecting a JSON response.
-
-**Incoming Payload (Bot -> Your Server):**
-```json
-{
-  "instanceid": "2",
-  "body": "Hello",
-  "from": "880171329xxxx@c.us"
-  // ... metadata
-}
+### 1. Install dependencies
+```bash
+npm install
 ```
 
-**Expected Response (Your Server -> Bot):**
-```json
-{
-  "reply": "Automatic Response",
-  "replyMedia": "https://example.com/image.jpg"
-}
+### 2. Configure environment
+```bash
+cp .env.example .env
+# Edit .env with your settings
 ```
 
----
+### 3. Run
 
-## ✨ Features
-
-### 🟢 Implemented Capabilities
-
-- [x] **Auto-Reply**: Instant response based on external triggers.
-- [x] **Media Support**: Send images/files via URL.
-- [x] **Group Management**: Compatible with individual `@c.us` and group `@g.us` JIDs.
-- [x] **Instance Management**: Init, Stop, Logout, and QR Scan endpoints.
-
-### 🗓️ Research & Development Plan (Todo)
-
-- [ ] **LLM Integration**: Connect the webhook to OpenAI to create a true "AI Assistant" on WhatsApp.
-- [ ] **Multi-Device Support**: Update core library to support the latest WhatsApp Multi-Device (MD) Beta protocol.
-- [ ] **Spam Protection**: Rate limiting middleware to prevent abuse.
-- [ ] **Analytics**: Dashboard showing message volume and response latency.
-
----
-
-## 🚀 Deployment Guide
-
-### Prerequisites
-
-- **Node.js**: Version 18.x or higher is recommended.
-- **npm**: Version 9.x or higher.
-- **Chromium/Chrome**: Required by Puppeteer (handled automatically by `puppeteer-chromium-resolver`).
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd whatsapp-bot
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Configure Environment Variables:
-   - Ensure a `.env` file exists in the root directory.
-   - Example content:
-     ```
-     PORT=8585
-     POST_API=https://your-api-url.com/webhook.php
-     KEY=YOUR_SECRET_KEY
-     ```
-
-### Running the Application
-
-#### Development
-To run the application in development mode with auto-reload:
+**Development (with hot reload):**
 ```bash
 npm run dev
 ```
 
-#### Production
-To start the application:
+**Production:**
 ```bash
+npm run build
 npm start
 ```
 
-### Usage
+### 4. Initialize a WhatsApp client
+```bash
+# Start client 1
+curl -X POST http://localhost:3000/1/init \
+  -H "Authorization: Bearer YOUR_API_KEY"
 
-1. Start the server.
-2. The application will initialize 6 WhatsApp clients by default.
-3. Access `http://localhost:8585/<client_id>/qr` (e.g., `http://localhost:8585/1/qr`) to view the QR code for authentication.
-4. Scan the QR code with your WhatsApp mobile app.
-5. Once authenticated, you can use the API endpoints to send messages.
+# Scan the QR code
+open http://localhost:3000/1/qr
+```
 
-### API Endpoints
+---
 
-- `GET /<client_id>`: Check client status.
-- `GET /<client_id>/init`: Initialize the client.
-- `GET /<client_id>/qr`: Get QR code for login.
-- `GET /<client_id>/logout`: Logout the client.
-- `POST /<client_id>/send`: Send a text message.
-  - Body: `{ "number": "1234567890@c.us", "message": "Hello" }`
-- `POST /<client_id>/sendMedia`: Send a media message.
-  - Body: `{ "number": "...", "mediaUrl": "...", "caption": "..." }`
+## ⚙️ Environment Variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `3000` | HTTP server port |
+| `API_KEY` | *(empty)* | Bearer token for API auth. Leave empty to disable (dev only) |
+| `CLIENT_COUNT` | `6` | Number of WhatsApp client slots |
+| `WEBHOOK_URL` | *(empty)* | URL to POST incoming messages to |
+| `CORS_ORIGIN` | `*` | Allowed CORS origins |
+| `RATE_LIMIT_MAX` | `60` | Max requests per IP per minute |
+
+---
+
+## 🔐 Authentication
+
+All endpoints (except `GET /`) require an `Authorization` header:
+
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+Set `API_KEY` in your `.env` to enable. Omit it to run without auth (development only).
+
+---
+
+## 📡 API Reference
+
+### System
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/` | API info |
+| `GET` | `/health` | Overall health + client summary |
+| `GET` | `/clients` | List all clients and their status |
+
+### Client Management
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/:id` | Client info / status |
+| `GET` | `/:id/status` | Detailed status JSON |
+| `POST` | `/:id/init` | Initialize and start client |
+| `GET` | `/:id/qr` | QR code page (HTML) |
+| `POST` | `/:id/logout` | Logout from WhatsApp |
+| `POST` | `/:id/exit` | Stop and destroy client |
+
+### Messaging
+
+| Method | Path | Body | Description |
+|---|---|---|---|
+| `POST` | `/:id/send` | `{ number, message }` | Send text message |
+| `POST` | `/:id/sendMedia` | `{ number, mediaUrl, caption? }` | Send media from URL |
+| `POST` | `/:id/sendBulk` | `{ numbers[], message }` | Send to multiple recipients |
+| `POST` | `/:id/sendButtons` | `{ number, body, buttons[], title?, footer? }` | Send button message |
+
+### Data
+
+| Method | Path | Query | Description |
+|---|---|---|---|
+| `GET` | `/:id/contacts` | — | List all contacts |
+| `GET` | `/:id/chats` | `?page=1&limit=20` | Paginated chat list |
+| `GET` | `/:id/chats/:chatId/messages` | `?page=1&limit=20` | Paginated messages |
+
+---
+
+## 🔗 Webhook Bridge
+
+Set `WEBHOOK_URL` in `.env`. On every incoming message, the bot will POST:
+
+```json
+{
+  "instanceId": "1",
+  "id": { ... },
+  "body": "Hello!",
+  "from": "8801XXXXXXXXX@c.us",
+  "to": "8801XXXXXXXXX@c.us",
+  "type": "chat",
+  "timestamp": 1700000000,
+  "hasMedia": false,
+  "isGroup": false
+}
+```
+
+Your server can respond with:
+```json
+{
+  "reply": "Hi there!",
+  "replyMedia": "base64_encoded_image_string"
+}
+```
+
+---
+
+## 📦 Number Format
+
+WhatsApp numbers use the format `<countrycode><number>@c.us`, e.g.:
+- Bangladesh: `8801XXXXXXXXX@c.us`
+- US: `1XXXXXXXXXX@c.us`
+- Groups: `XXXXXXXXXX-XXXXXXXXXX@g.us`
 
 ---
 
 ## 🧪 Testing
 
-This project uses `jest`, `supertest` and mocks for robust automated testing without physical devices.
-
-### Running Tests
-
-Execute the full test suite with:
-
 ```bash
 npm test
 ```
-
-### Test Reports
-
-A detailed HTML report is automatically generated at `test-report.html` after each run. This file includes:
--   **Execution Time**: Performance metrics for each test.
--   **Status**: Visual indicators for passed/failed tests.
--   **Coverage**: (If configured) Code coverage validation.
-
-The testing architecture mocks `whatsapp-web.js` to simulate:
--   Client initialization and authentication.
--   Message transmission via API.
--   Incoming message event handling and auto-replies.
-
----
-
-## 📜 Changelog
-
-### Project Resurrection (Current)
-- **Dependency Updates**:
-  - Upgraded `express` to v5.2.1.
-  - Upgraded `whatsapp-web.js` to v1.34.2.
-  - Upgraded `puppeteer-chromium-resolver` to v24.0.3.
-  - Upgraded `nodemon` to v3.1.11.
-  - Upgraded `dotenv`, `cors`, `qrcode`, `axios` to latest versions.
-  - Removed unused dependencies (`mysql`, `fs`).
-- **Code Refactoring**:
-  - Modernized `app.js` (replaced `var` with `const`/`let`).
-  - Improved route definitions to prevent memory leaks and dynamic route creation issues.
-  - Fixed `puppeteer-chromium-resolver` initialization (async/await).
-  - Ensured compatibility with latest `whatsapp-web.js` (`LocalAuth`).
-- **Security**:
-  - Audited and fixed high-severity vulnerabilities in dependencies.
 
 ---
 
@@ -192,8 +188,8 @@ Distributed under the **GNU GPL v3.0** License. See `LICENSE` for more informati
 
 **[Sajid Mahamud](https://github.com/sajidmahamud835)**
 
-*Automation Specialist • Backend Engineer*
+*TypeScript Engineer • Automation Specialist*
 
-[🌐 Visit Portfolio](https://sajidmahamud835.github.io/)
+[🌐 Portfolio](https://sajidmahamud835.github.io/)
 
 </div>

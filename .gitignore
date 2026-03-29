@@ -1,5 +1,35 @@
-.wwebjs_auth
-node_modules
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# WhatsApp auth & cache (session data is stored here — add exceptions if needed)
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Chromium snapshots
+.chromium-browser-snapshots/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+*.zip
 test.js
 test.php
 whatsapp-api.zip
