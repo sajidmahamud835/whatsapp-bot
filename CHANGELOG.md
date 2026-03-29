@@ -1,5 +1,63 @@
 # Changelog
 
+## [4.0.0] - 2026-03-29
+
+### ⚠️ Breaking Changes
+- Entry point moved from `src/index.ts` to `src/api/server.ts`
+- Old `src/index.ts` now re-exports from `src/api/server.ts` for backward compatibility
+- `src/clientManager.ts` replaced by `src/core/client-manager.ts`
+- `src/types.ts` replaced by `src/core/types.ts` (extended with config types)
+- `src/middleware/` moved to `src/api/middleware/`
+- `src/routes/` moved to `src/api/routes/`
+- `src/utils/session.ts` updated to import from new core path
+
+### Added — WA Convo Platform
+
+#### Core Engine (`src/core/`)
+- **`config.ts`** — Config manager with `config/config.json`, dot-notation get/set, deep merge with defaults, env var overrides
+- **`logger.ts`** — Pino-based structured logger with file output, log rotation, console + file targets, redact phone numbers option
+- **`events.ts`** — Typed EventEmitter bus with events: `message.received`, `message.sent`, `client.connected`, `client.disconnected`, `client.qr`, `client.ready`, `client.error`, `group.joined`, `group.left`, `server.started`, `server.stopped`
+- **`client-manager.ts`** — Refactored from `clientManager.ts` — integrates with new config, logger, and event bus
+- **`types.ts`** — Extended with `AppConfig`, config sub-types, event types
+
+#### API (`src/api/`)
+- **`server.ts`** — New Express server entry, imports from `core/`, creates HTTP server for WebSocket attachment
+- **`websocket.ts`** — WebSocket server at `/ws` — real-time event broadcasting, subscribe/unsubscribe to event types
+- **`routes/config.ts`** — Config CRUD API: `GET /config`, `GET /config/:path`, `PUT /config/:path`, `POST /config/reload`
+- Health route updated: response includes `service: "WA Convo"` and `version: "4.0.0"`
+- QR page updated with WA Convo branding
+
+#### CLI (`src/cli/`)
+- **`wa-convo` CLI tool** using `commander`
+- Commands: `start`, `stop`, `status`, `client list|init|qr|logout`, `send`, `config get|set|edit`, `contacts list|check`, `groups list|create`, `logs`
+- Log streaming with `--follow`, level filter (`--level error`), time filter (`--since 1h`)
+- Table-formatted output with ASCII box borders
+- Color output using ANSI codes
+
+#### Utils (`src/utils/`)
+- **`jid.ts`** — JID formatting helpers: `toJid`, `toGroupJid`, `jidToNumber`, `isGroupJid`, `isBroadcastJid`
+
+#### Config (`config/config.json`)
+- Default config file created with all settings documented
+
+#### Updated Files
+- **`package.json`** — name: `wa-convo`, version: `4.0.0`, added `commander`, `chalk`, `ws`, `@types/ws` deps, `bin` field, updated scripts
+- **`.env.example`** — Updated with all new env vars including AI, dashboard, deployment sections
+- **`README.md`** — Rebranded as WA Convo, added CLI reference, config docs, WebSocket docs, project structure
+
+### Changed
+- All 61 existing API endpoints preserved and working
+- Startup log now shows WA Convo branding
+- Baileys browser field updated to `['WA Convo', 'Chrome', '4.0.0']`
+- Server now uses `http.createServer()` for WebSocket support
+
+### Internal
+- Added `ws` as dependency (WebSocket server)
+- Config reads from `config/config.json` with env var overrides for backward compatibility
+- Event bus integrated into client-manager for QR, connect, disconnect events
+
+---
+
 ## [3.1.0] - 2026-03-29
 
 ### Added — Complete Baileys Feature Set

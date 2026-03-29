@@ -1,0 +1,44 @@
+{
+  "server": {
+    "port": 3000,
+    "host": "127.0.0.1",
+    "apiKey": ""
+  },
+  "dashboard": {
+    "enabled": false,
+    "port": 3001
+  },
+  "clients": {
+    "count": 6,
+    "autoInit": [],
+    "reconnectInterval": 5000,
+    "authDir": ".auth"
+  },
+  "ai": {
+    "enabled": false,
+    "defaultProvider": "",
+    "providers": {},
+    "systemPrompt": "",
+    "maxTokens": 500,
+    "temperature": 0.7
+  },
+  "crons": [],
+  "integrations": {
+    "webhooks": []
+  },
+  "logging": {
+    "level": "info",
+    "dir": "./logs",
+    "console": true,
+    "file": true,
+    "maxFiles": 30,
+    "redactNumbers": false
+  },
+  "deployment": {
+    "mode": "local",
+    "publicUrl": "",
+    "ssl": {
+      "enabled": false
+    }
+  }
+}

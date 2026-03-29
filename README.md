@@ -1,15 +1,17 @@
 <div align="center">
 
-# 🤖 WhatsApp Bot — Multi-Client REST API
+# 🟢 WA Convo
+
+### WhatsApp Automation Platform
 
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge&logo=node.js)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Baileys](https://img.shields.io/badge/Library-Baileys-25D366?style=for-the-badge&logo=whatsapp)](https://github.com/WhiskeySockets/Baileys)
-[![Version](https://img.shields.io/badge/version-3.1.0-orange?style=for-the-badge)](./CHANGELOG.md)
+[![Baileys](https://img.shields.io/badge/Engine-Baileys-25D366?style=for-the-badge&logo=whatsapp)](https://github.com/WhiskeySockets/Baileys)
+[![Version](https://img.shields.io/badge/version-4.0.0-brightgreen?style=for-the-badge)](./CHANGELOG.md)
 
-**A programmable, TypeScript-first automation bridge between the WhatsApp network and external REST APIs.**
+**A full-stack WhatsApp automation platform — REST API + WebSocket + CLI + Config system.**
 
-*Scalable • Multi-Client • Webhook-Driven • API-Key Protected • No Puppeteer*
+*Multi-Client • Webhook-Driven • Event-Based • API-First • No Puppeteer*
 
 [Report Bug](https://github.com/sajidmahamud835/whatsapp-bot/issues) · [Request Feature](https://github.com/sajidmahamud835/whatsapp-bot/issues)
 
@@ -17,107 +19,154 @@
 
 ---
 
-## ✨ v3.1 Highlights — Complete Baileys Feature Set
+## ✨ v4.0 — WA Convo Platform
 
-- ✅ **Messages** — reactions, polls, view-once, edit, delete, reply, forward, location, vCard, sticker, voice note
-- ✅ **Groups** — create, add/remove/promote/demote members, update metadata, invite links, settings
-- ✅ **Contacts** — check existence, profile pic, about/status, business profile, block/unblock
-- ✅ **Status/Stories** — post text, image, and video statuses to `status@broadcast`
-- ✅ **Presence** — set online/typing/recording, subscribe to contact presence
-- ✅ **Privacy** — disappearing messages, archive, pin, mute chats
-- ✅ **Labels** — list, create, assign labels to chats
-
----
-
-## ✨ v3 Highlights
-
-- ✅ **Baileys (WebSocket-based)** — no Chrome/Chromium required
-- ✅ **~10–50 MB RAM per client** — down from ~300–500 MB with Puppeteer
-- ✅ **Full TypeScript** — strict mode, proper types throughout
-- ✅ **Dynamic client count** — configure via `CLIENT_COUNT` env
-- ✅ **API key authentication** — Bearer token middleware
-- ✅ **Rate limiting** — configurable per-IP throttle
-- ✅ **Webhook bridge** — forward incoming messages, receive reply commands
-- ✅ **Paginated endpoints** — chats & messages support `?page=&limit=`
-- ✅ **Health check** — `GET /health` for monitoring
-- ✅ **Auto-reconnect** — reconnects automatically on connection drops
+- 🏗️ **Monorepo-lite structure** — `core/`, `api/`, `cli/`, `utils/`
+- ⚙️ **Config system** — JSON config with dot-notation get/set/edit via CLI & API
+- 📋 **Structured logging** — Pino-based JSON logs to file + console with log levels
+- 🔌 **Event system** — Node EventEmitter for webhooks and future N8N integration
+- 🌐 **WebSocket server** — real-time event streaming (QR, status, messages)
+- 🖥️ **CLI tool** — `wa-convo` command with full client/config/logs management
+- 🛣️ **Config API** — CRUD config via REST endpoints
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Install dependencies
+### Install & Build
+
 ```bash
 npm install
+npm run build
 ```
 
-### 2. Configure environment
+### Configure
+
 ```bash
 cp .env.example .env
-# Edit .env with your settings
+# Or use the CLI:
+wa-convo config edit
 ```
 
-### 3. Run
+### Start
 
-**Development (with hot reload):**
 ```bash
-npm run dev
-```
-
-**Production:**
-```bash
-npm run build
+# Production
 npm start
+
+# Development (hot reload)
+npm run dev
+
+# Via CLI
+wa-convo start
 ```
 
-### 4. Initialize a WhatsApp client
+### Connect a WhatsApp client
+
 ```bash
-# Start client 1
-curl -X POST http://localhost:3000/1/init \
-  -H "Authorization: Bearer YOUR_API_KEY"
+# Initialize client 1
+wa-convo client init 1
 
-# Scan the QR code (terminal or browser)
-open http://localhost:3000/1/qr
+# Open QR in browser
+wa-convo client qr 1
+# Or scan from terminal output directly
 ```
-
-The QR code also prints directly in the server terminal.
 
 ---
 
-## ⚙️ Environment Variables
+## 🖥️ CLI Reference
 
-| Variable | Default | Description |
-|---|---|---|
-| `PORT` | `3000` | HTTP server port |
-| `API_KEY` | *(empty)* | Bearer token for API auth. Leave empty to disable (dev only) |
-| `CLIENT_COUNT` | `6` | Number of WhatsApp client slots |
-| `WEBHOOK_URL` | *(empty)* | URL to POST incoming messages to |
-| `CORS_ORIGIN` | `*` | Allowed CORS origins |
-| `RATE_LIMIT_MAX` | `60` | Max requests per IP per minute |
+```bash
+wa-convo --help
+```
+
+| Command | Description |
+|---|---|
+| `wa-convo start` | Start the API server |
+| `wa-convo start --headless` | Start without dashboard |
+| `wa-convo stop` | Stop the server |
+| `wa-convo status` | Show server & client status |
+| `wa-convo client list` | List all clients |
+| `wa-convo client init <id>` | Initialize a client |
+| `wa-convo client qr <id>` | Show QR code |
+| `wa-convo client logout <id>` | Logout a client |
+| `wa-convo send <id> <number> <msg>` | Send a message |
+| `wa-convo config get <key>` | Get config value |
+| `wa-convo config set <key> <val>` | Set config value |
+| `wa-convo config edit` | Edit config in $EDITOR |
+| `wa-convo contacts list <id>` | List contacts |
+| `wa-convo contacts check <id> <num>` | Check if on WhatsApp |
+| `wa-convo groups list <id>` | List groups |
+| `wa-convo logs` | View logs |
+| `wa-convo logs --follow` | Stream logs |
+| `wa-convo logs --level error` | Filter by level |
+| `wa-convo logs --since 1h` | Show last 1 hour |
 
 ---
 
-## 🔐 Authentication
+## ⚙️ Configuration
 
-All endpoints (except `GET /`) require an `Authorization` header:
+Config file: `config/config.json`
 
+```json
+{
+  "server": { "port": 3000, "host": "127.0.0.1", "apiKey": "" },
+  "clients": { "count": 6, "autoInit": [], "reconnectInterval": 5000 },
+  "logging": { "level": "info", "dir": "./logs", "redactNumbers": false },
+  "integrations": { "webhooks": [] }
+}
 ```
-Authorization: Bearer YOUR_API_KEY
+
+**Via CLI:**
+```bash
+wa-convo config set server.port 3001
+wa-convo config get clients.count
+wa-convo config edit   # opens in $EDITOR
 ```
 
-Set `API_KEY` in your `.env` to enable. Omit it to run without auth (development only).
+**Via API:**
+```bash
+GET  /config              # full config (redacted)
+GET  /config/server.port  # specific value
+PUT  /config/server.port  # set value { "value": 3001 }
+POST /config/reload       # reload from disk
+```
+
+---
+
+## 🌐 WebSocket
+
+Connect to `ws://localhost:3000/ws` for real-time events.
+
+**Events:** `message.received`, `client.qr`, `client.connected`, `client.disconnected`, `client.ready`, `group.joined`, `server.started`
+
+**Subscribe to specific events:**
+```json
+{ "type": "subscribe", "events": ["message.received", "client.qr"] }
+```
+
+**Ping/pong:**
+```json
+{ "type": "ping" }
+```
 
 ---
 
 ## 📡 API Reference
+
+> All endpoints require `Authorization: Bearer YOUR_API_KEY` (if API_KEY is set)
 
 ### System
 
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/` | API info |
-| `GET` | `/health` | Overall health + client summary |
-| `GET` | `/clients` | List all clients and their status |
+| `GET` | `/health` | Health + client summary |
+| `GET` | `/clients` | List all clients |
+| `GET` | `/config` | Get full config (redacted) |
+| `GET` | `/config/:path` | Get config value (dot notation) |
+| `PUT` | `/config/:path` | Set config value |
+| `POST` | `/config/reload` | Reload config from disk |
 
 ### Client Management
 
@@ -137,136 +186,88 @@ Set `API_KEY` in your `.env` to enable. Omit it to run without auth (development
 | `POST` | `/:id/send` | `{ number, message }` | Send text message |
 | `POST` | `/:id/sendMedia` | `{ number, mediaUrl, caption? }` | Send media from URL |
 | `POST` | `/:id/sendBulk` | `{ numbers[], message }` | Send to multiple recipients |
-| `POST` | `/:id/sendButtons` | `{ number, body, buttons[], title?, footer? }` | Send button message* |
+| `POST` | `/:id/sendButtons` | `{ number, body, buttons[], footer? }` | Send button message* |
 
-> *Note: WhatsApp has restricted native button messages. `sendButtons` gracefully falls back to formatted text.
-
-### Data
-
-| Method | Path | Query | Description |
-|---|---|---|---|
-| `GET` | `/:id/contacts` | — | List contacts |
-| `GET` | `/:id/chats` | `?page=1&limit=20` | Paginated chat list |
-| `GET` | `/:id/chats/:chatId/messages` | `?page=1&limit=20` | Paginated messages |
-
----
-
-### 💬 Advanced Messages (`src/routes/messages.ts`)
+### Advanced Messages
 
 | Method | Path | Body | Description |
 |---|---|---|---|
-| `POST` | `/:id/messages/react` | `{ key, emoji }` | Send reaction emoji to a message |
-| `POST` | `/:id/messages/poll` | `{ number, title, options[], singleSelect? }` | Create a poll |
-| `POST` | `/:id/messages/viewonce` | `{ number, media, mediaType?, caption?, mimetype? }` | Send view-once image/video |
-| `POST` | `/:id/messages/edit` | `{ key, newText }` | Edit a sent message |
-| `POST` | `/:id/messages/delete` | `{ key }` | Delete message for everyone |
-| `POST` | `/:id/messages/reply` | `{ key, text }` | Reply/quote a specific message |
-| `POST` | `/:id/messages/forward` | `{ key, to }` | Forward a message to another chat |
-| `POST` | `/:id/messages/location` | `{ number, latitude, longitude, name? }` | Send location |
-| `POST` | `/:id/messages/contact` | `{ number, name, contactNumber }` | Send vCard contact |
-| `POST` | `/:id/messages/sticker` | `{ number, sticker }` | Send sticker (URL or base64) |
-| `POST` | `/:id/messages/voice` | `{ number, audio, mimetype? }` | Send voice note (URL or base64, ptt) |
-| `POST` | `/:id/messages/read` | `{ keys[] }` | Mark messages as read |
+| `POST` | `/:id/messages/react` | `{ key, emoji }` | Send reaction |
+| `POST` | `/:id/messages/poll` | `{ number, title, options[] }` | Create poll |
+| `POST` | `/:id/messages/viewonce` | `{ number, media, mediaType? }` | View-once media |
+| `POST` | `/:id/messages/edit` | `{ key, newText }` | Edit message |
+| `POST` | `/:id/messages/delete` | `{ key }` | Delete for everyone |
+| `POST` | `/:id/messages/reply` | `{ key, text }` | Reply/quote |
+| `POST` | `/:id/messages/forward` | `{ key, to }` | Forward message |
+| `POST` | `/:id/messages/location` | `{ number, latitude, longitude }` | Send location |
+| `POST` | `/:id/messages/contact` | `{ number, name, contactNumber }` | Send vCard |
+| `POST` | `/:id/messages/sticker` | `{ number, sticker }` | Send sticker |
+| `POST` | `/:id/messages/voice` | `{ number, audio }` | Send voice note |
+| `POST` | `/:id/messages/read` | `{ keys[] }` | Mark as read |
 
-**Message key format:**
-```json
-{
-  "remoteJid": "8801XXXXXXXXX@s.whatsapp.net",
-  "fromMe": true,
-  "id": "ABCDEF1234567890"
-}
-```
+### Groups
 
----
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/:id/groups/create` | Create group |
+| `POST` | `/:id/groups/join` | Join via invite |
+| `GET` | `/:id/groups` | List all groups |
+| `GET` | `/:id/groups/:groupId` | Group metadata |
+| `GET` | `/:id/groups/:groupId/invite` | Get invite link |
+| `POST` | `/:id/groups/:groupId/revoke-invite` | Revoke invite |
+| `POST` | `/:id/groups/:groupId/add` | Add participants |
+| `POST` | `/:id/groups/:groupId/remove` | Remove participants |
+| `POST` | `/:id/groups/:groupId/promote` | Make admin |
+| `POST` | `/:id/groups/:groupId/demote` | Revoke admin |
+| `PUT` | `/:id/groups/:groupId` | Update name/desc/photo |
+| `PUT` | `/:id/groups/:groupId/settings` | Set announcement/restrict |
 
-### 👥 Groups (`src/routes/groups.ts`)
+### Contacts
 
-| Method | Path | Body | Description |
-|---|---|---|---|
-| `POST` | `/:id/groups/create` | `{ name, participants[] }` | Create a group |
-| `POST` | `/:id/groups/join` | `{ inviteCode }` | Join group via invite link/code |
-| `GET` | `/:id/groups` | — | List all groups with participant counts |
-| `GET` | `/:id/groups/:groupId` | — | Get group metadata |
-| `GET` | `/:id/groups/:groupId/invite` | — | Get invite link |
-| `POST` | `/:id/groups/:groupId/revoke-invite` | — | Revoke and regenerate invite link |
-| `POST` | `/:id/groups/:groupId/add` | `{ participants[] }` | Add participants |
-| `POST` | `/:id/groups/:groupId/remove` | `{ participants[] }` | Remove participants |
-| `POST` | `/:id/groups/:groupId/promote` | `{ participants[] }` | Make participants admin |
-| `POST` | `/:id/groups/:groupId/demote` | `{ participants[] }` | Revoke admin from participants |
-| `PUT` | `/:id/groups/:groupId` | `{ name?, description?, photo? }` | Update group name/description/photo |
-| `PUT` | `/:id/groups/:groupId/settings` | `{ announcement?, restrict? }` | Update who can send/edit |
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/:id/contacts/check` | Check if numbers are on WhatsApp |
+| `GET` | `/:id/contacts/:jid/profile-pic` | Get profile picture URL |
+| `GET` | `/:id/contacts/:jid/about` | Get about/status text |
+| `GET` | `/:id/contacts/:jid/business` | Get business profile |
+| `POST` | `/:id/contacts/block` | Block a contact |
+| `POST` | `/:id/contacts/unblock` | Unblock a contact |
+| `GET` | `/:id/labels` | List labels |
+| `POST` | `/:id/labels` | Create label |
+| `POST` | `/:id/labels/:labelId/assign` | Assign label |
 
-**Settings fields:**
-- `announcement: true` — only admins can send messages
-- `restrict: true` — only admins can edit group info
+### Status / Stories
 
----
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/:id/status/text` | Post text status |
+| `POST` | `/:id/status/image` | Post image status |
+| `POST` | `/:id/status/video` | Post video status |
 
-### 📞 Contacts (`src/routes/contacts.ts`)
+### Presence
 
-| Method | Path | Body | Description |
-|---|---|---|---|
-| `POST` | `/:id/contacts/check` | `{ numbers[] }` | Check if numbers are on WhatsApp |
-| `GET` | `/:id/contacts/:jid/profile-pic` | — | Get profile picture URL |
-| `GET` | `/:id/contacts/:jid/about` | — | Get about/status text |
-| `GET` | `/:id/contacts/:jid/business` | — | Get business profile |
-| `POST` | `/:id/contacts/block` | `{ number }` | Block a contact |
-| `POST` | `/:id/contacts/unblock` | `{ number }` | Unblock a contact |
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/:id/presence/update` | Set presence |
+| `POST` | `/:id/presence/subscribe` | Subscribe to contact presence |
 
-### 🏷️ Labels (`src/routes/contacts.ts`)
+### Privacy / Chat
 
-| Method | Path | Body | Description |
-|---|---|---|---|
-| `GET` | `/:id/labels` | — | List all labels |
-| `POST` | `/:id/labels` | `{ name, color? }` | Create a label |
-| `POST` | `/:id/labels/:labelId/assign` | `{ jid, type? }` | Assign/remove label from chat |
-
----
-
-### 📸 Status / Stories (`src/routes/status.ts`)
-
-| Method | Path | Body | Description |
-|---|---|---|---|
-| `POST` | `/:id/status/text` | `{ text, backgroundColor?, font? }` | Post text status |
-| `POST` | `/:id/status/image` | `{ image, caption? }` | Post image status (URL or base64) |
-| `POST` | `/:id/status/video` | `{ video, caption? }` | Post video status (URL or base64) |
-
----
-
-### 👁️ Presence (`src/routes/presence.ts`)
-
-| Method | Path | Body | Description |
-|---|---|---|---|
-| `POST` | `/:id/presence/update` | `{ presence, jid? }` | Set presence (available/unavailable/composing/recording/paused) |
-| `POST` | `/:id/presence/subscribe` | `{ number }` | Subscribe to contact's presence events |
-
----
-
-### 🔒 Privacy / Chat Modify (`src/routes/privacy.ts`)
-
-| Method | Path | Body | Description |
-|---|---|---|---|
-| `POST` | `/:id/chats/:jid/disappearing` | `{ expiration }` | Enable/disable disappearing messages (seconds; 0 = off) |
-| `POST` | `/:id/chats/:jid/archive` | — | Archive a chat |
-| `POST` | `/:id/chats/:jid/unarchive` | — | Unarchive a chat |
-| `POST` | `/:id/chats/:jid/pin` | — | Pin a chat |
-| `POST` | `/:id/chats/:jid/unpin` | — | Unpin a chat |
-| `POST` | `/:id/chats/:jid/mute` | `{ duration }` | Mute chat (ms from now; -1 = forever) |
-| `POST` | `/:id/chats/:jid/unmute` | — | Unmute a chat |
-
-**Disappearing message presets:**
-| Value | Duration |
-|---|---|
-| `0` | Disabled |
-| `86400` | 24 hours |
-| `604800` | 7 days |
-| `7776000` | 90 days |
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/:id/chats/:jid/disappearing` | Set disappearing messages |
+| `POST` | `/:id/chats/:jid/archive` | Archive chat |
+| `POST` | `/:id/chats/:jid/unarchive` | Unarchive chat |
+| `POST` | `/:id/chats/:jid/pin` | Pin chat |
+| `POST` | `/:id/chats/:jid/unpin` | Unpin chat |
+| `POST` | `/:id/chats/:jid/mute` | Mute chat |
+| `POST` | `/:id/chats/:jid/unmute` | Unmute chat |
 
 ---
 
 ## 🔗 Webhook Bridge
 
-Set `WEBHOOK_URL` in `.env`. On every incoming message, the bot POSTs:
+Set `WEBHOOK_URL` in `.env`. On every incoming message:
 
 ```json
 {
@@ -282,66 +283,65 @@ Set `WEBHOOK_URL` in `.env`. On every incoming message, the bot POSTs:
 }
 ```
 
-Your server can respond with:
+Respond with:
 ```json
-{
-  "reply": "Hi there!",
-  "replyMedia": "base64_encoded_image_string"
-}
+{ "reply": "Hi there!" }
 ```
 
 ---
 
-## 📦 Number Format
+## 📦 Project Structure
 
-Baileys uses JID format:
-
-| Type | Format | Example |
-|---|---|---|
-| Individual | `<countrycode><number>@s.whatsapp.net` | `8801XXXXXXXXX@s.whatsapp.net` |
-| Group | `<groupid>@g.us` | `1234567890-1234567890@g.us` |
-
-**You can also pass bare numbers** (e.g. `8801XXXXXXXXX`) — the API will auto-convert them.
-
-> ⚠️ v2 used `@c.us` suffix. Baileys uses `@s.whatsapp.net` for individuals.
-
----
-
-## 🔄 Migrating from v2
-
-| Change | v2 | v3 |
-|---|---|---|
-| Library | `whatsapp-web.js` | `@whiskeysockets/baileys` |
-| Auth folder | `.wwebjs_auth/` | `.auth/session-{id}/` |
-| JID format | `number@c.us` | `number@s.whatsapp.net` |
-| RAM per client | ~300–500 MB | ~10–50 MB |
-| Chrome required | ✅ Yes | ❌ No |
-| API endpoints | unchanged | identical |
-
-**API endpoints are 100% backward-compatible.** Just update number formats and `npm install`.
-
----
-
-## 🧪 Testing
-
-```bash
-npm test
 ```
+src/
+├── core/           # Core engine
+│   ├── client-manager.ts
+│   ├── config.ts
+│   ├── events.ts
+│   ├── logger.ts
+│   └── types.ts
+├── api/            # REST API + WebSocket
+│   ├── server.ts
+│   ├── websocket.ts
+│   ├── middleware/
+│   └── routes/
+├── cli/            # CLI tool (wa-convo)
+│   ├── index.ts
+│   ├── commands/
+│   └── utils.ts
+└── utils/
+    ├── session.ts
+    └── jid.ts
+```
+
+---
+
+## 🔄 Migration from v3
+
+All v3 API endpoints are 100% backward-compatible. New features:
+
+| Feature | v3 | v4 |
+|---|---|---|
+| Entry point | `src/index.ts` | `src/api/server.ts` |
+| Config | `.env` only | `config/config.json` + `.env` |
+| Logging | console.log | Pino structured JSON |
+| Events | none | EventEmitter bus |
+| WebSocket | none | `/ws` endpoint |
+| CLI | none | `wa-convo` command |
+| Config API | none | `GET/PUT /config/*` |
 
 ---
 
 ## 📄 License
 
-Distributed under the **GNU GPL v3.0** License. See `LICENSE` for more information.
+GNU GPL v3.0 — See `LICENSE` for details.
 
 ---
 
 <div align="center">
 
-**[Sajid Mahamud](https://github.com/sajidmahamud835)**
+**[Sajid Mahamud](https://github.com/sajidmahamud835)** · TypeScript Engineer · Automation Specialist
 
-*TypeScript Engineer • Automation Specialist*
-
-[🌐 Portfolio](https://sajidmahamud835.github.io/)
+[🌐 Portfolio](https://sajidmahamud835.github.io/) · [📦 GitHub](https://github.com/sajidmahamud835/whatsapp-bot)
 
 </div>

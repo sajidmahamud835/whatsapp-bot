@@ -1,5 +1,5 @@
 import type { Response } from 'express';
-import { sessions } from '../clientManager.js';
+import { sessions } from '../core/client-manager.js';
 
 export type Session = NonNullable<ReturnType<typeof sessions.get>>;
 
