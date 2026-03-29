@@ -9,11 +9,14 @@ dist/
 .env.local
 .env.*.local
 
-# WhatsApp auth & cache (session data is stored here — add exceptions if needed)
+# WhatsApp auth (Baileys v3+)
+.auth/
+
+# Legacy WhatsApp auth (whatsapp-web.js — kept for gitignore safety)
 .wwebjs_auth/
 .wwebjs_cache/
 
-# Chromium snapshots
+# Legacy Chromium snapshots
 .chromium-browser-snapshots/
 
 # Logs

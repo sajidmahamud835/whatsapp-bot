@@ -22,7 +22,8 @@ app.use(rateLimiter);
 app.get('/', (_req, res) => {
   res.json({
     name: 'WhatsApp Bot API',
-    version: '2.0.0',
+    version: '3.0.0',
+    engine: 'Baileys (WebSocket)',
     docs: 'https://github.com/sajidmahamud835/whatsapp-bot',
   });
 });
@@ -53,7 +54,7 @@ function start(): void {
   initializeSessions();
 
   app.listen(port, () => {
-    console.log(`🚀 WhatsApp Bot API running on port ${port}`);
+    console.log(`🚀 WhatsApp Bot API v3.0.0 (Baileys) running on port ${port}`);
     console.log(`   Health: http://localhost:${port}/health`);
     console.log(`   Clients: http://localhost:${port}/clients`);
   });

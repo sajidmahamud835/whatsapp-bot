@@ -4,11 +4,11 @@
 
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge&logo=node.js)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![WhatsApp-Web.js](https://img.shields.io/badge/Library-whatsapp--web.js-25D366?style=for-the-badge&logo=whatsapp)](https://wwebjs.dev/)
+[![Baileys](https://img.shields.io/badge/Library-Baileys-25D366?style=for-the-badge&logo=whatsapp)](https://github.com/WhiskeySockets/Baileys)
 
 **A programmable, TypeScript-first automation bridge between the WhatsApp network and external REST APIs.**
 
-*Scalable • Multi-Client • Webhook-Driven • API-Key Protected*
+*Scalable • Multi-Client • Webhook-Driven • API-Key Protected • No Puppeteer*
 
 [Report Bug](https://github.com/sajidmahamud835/whatsapp-bot/issues) · [Request Feature](https://github.com/sajidmahamud835/whatsapp-bot/issues)
 
@@ -16,17 +16,18 @@
 
 ---
 
-## ✨ v2 Highlights
+## ✨ v3 Highlights
 
-- ✅ **Full TypeScript rewrite** — strict mode, proper types throughout
-- ✅ **Dynamic client count** — configure via `CLIENT_COUNT` env, no code changes needed
-- ✅ **API key authentication** — Bearer token middleware on all endpoints
+- ✅ **Baileys (WebSocket-based)** — no Chrome/Chromium required
+- ✅ **~10–50 MB RAM per client** — down from ~300–500 MB with Puppeteer
+- ✅ **Full TypeScript** — strict mode, proper types throughout
+- ✅ **Dynamic client count** — configure via `CLIENT_COUNT` env
+- ✅ **API key authentication** — Bearer token middleware
 - ✅ **Rate limiting** — configurable per-IP throttle
-- ✅ **Webhook bridge** — forward all incoming messages to your server, receive reply commands
-- ✅ **Paginated endpoints** — chats & messages support `?page=&limit=` params
+- ✅ **Webhook bridge** — forward incoming messages, receive reply commands
+- ✅ **Paginated endpoints** — chats & messages support `?page=&limit=`
 - ✅ **Health check** — `GET /health` for monitoring
-- ✅ **No puppeteer-chromium-resolver** — removed; whatsapp-web.js bundles puppeteer/chromium
-- ✅ **Proper error responses** — JSON errors with HTTP status codes throughout
+- ✅ **Auto-reconnect** — reconnects automatically on connection drops
 
 ---
 
@@ -62,9 +63,11 @@ npm start
 curl -X POST http://localhost:3000/1/init \
   -H "Authorization: Bearer YOUR_API_KEY"
 
-# Scan the QR code
+# Scan the QR code (terminal or browser)
 open http://localhost:3000/1/qr
 ```
+
+The QR code also prints directly in the server terminal.
 
 ---
 
@@ -110,7 +113,7 @@ Set `API_KEY` in your `.env` to enable. Omit it to run without auth (development
 | `GET` | `/:id` | Client info / status |
 | `GET` | `/:id/status` | Detailed status JSON |
 | `POST` | `/:id/init` | Initialize and start client |
-| `GET` | `/:id/qr` | QR code page (HTML) |
+| `GET` | `/:id/qr` | QR code page (HTML, auto-refreshes) |
 | `POST` | `/:id/logout` | Logout from WhatsApp |
 | `POST` | `/:id/exit` | Stop and destroy client |
 
@@ -121,13 +124,15 @@ Set `API_KEY` in your `.env` to enable. Omit it to run without auth (development
 | `POST` | `/:id/send` | `{ number, message }` | Send text message |
 | `POST` | `/:id/sendMedia` | `{ number, mediaUrl, caption? }` | Send media from URL |
 | `POST` | `/:id/sendBulk` | `{ numbers[], message }` | Send to multiple recipients |
-| `POST` | `/:id/sendButtons` | `{ number, body, buttons[], title?, footer? }` | Send button message |
+| `POST` | `/:id/sendButtons` | `{ number, body, buttons[], title?, footer? }` | Send button message* |
+
+> *Note: WhatsApp has restricted native button messages. `sendButtons` gracefully falls back to formatted text.
 
 ### Data
 
 | Method | Path | Query | Description |
 |---|---|---|---|
-| `GET` | `/:id/contacts` | — | List all contacts |
+| `GET` | `/:id/contacts` | — | List contacts |
 | `GET` | `/:id/chats` | `?page=1&limit=20` | Paginated chat list |
 | `GET` | `/:id/chats/:chatId/messages` | `?page=1&limit=20` | Paginated messages |
 
@@ -135,16 +140,16 @@ Set `API_KEY` in your `.env` to enable. Omit it to run without auth (development
 
 ## 🔗 Webhook Bridge
 
-Set `WEBHOOK_URL` in `.env`. On every incoming message, the bot will POST:
+Set `WEBHOOK_URL` in `.env`. On every incoming message, the bot POSTs:
 
 ```json
 {
   "instanceId": "1",
-  "id": { ... },
+  "id": { "remoteJid": "...", "fromMe": false, "id": "..." },
   "body": "Hello!",
-  "from": "8801XXXXXXXXX@c.us",
-  "to": "8801XXXXXXXXX@c.us",
-  "type": "chat",
+  "from": "8801XXXXXXXXX@s.whatsapp.net",
+  "to": "8801XXXXXXXXX@s.whatsapp.net",
+  "type": "conversation",
   "timestamp": 1700000000,
   "hasMedia": false,
   "isGroup": false
@@ -163,10 +168,31 @@ Your server can respond with:
 
 ## 📦 Number Format
 
-WhatsApp numbers use the format `<countrycode><number>@c.us`, e.g.:
-- Bangladesh: `8801XXXXXXXXX@c.us`
-- US: `1XXXXXXXXXX@c.us`
-- Groups: `XXXXXXXXXX-XXXXXXXXXX@g.us`
+Baileys uses JID format:
+
+| Type | Format | Example |
+|---|---|---|
+| Individual | `<countrycode><number>@s.whatsapp.net` | `8801XXXXXXXXX@s.whatsapp.net` |
+| Group | `<groupid>@g.us` | `1234567890-1234567890@g.us` |
+
+**You can also pass bare numbers** (e.g. `8801XXXXXXXXX`) — the API will auto-convert them.
+
+> ⚠️ v2 used `@c.us` suffix. Baileys uses `@s.whatsapp.net` for individuals.
+
+---
+
+## 🔄 Migrating from v2
+
+| Change | v2 | v3 |
+|---|---|---|
+| Library | `whatsapp-web.js` | `@whiskeysockets/baileys` |
+| Auth folder | `.wwebjs_auth/` | `.auth/session-{id}/` |
+| JID format | `number@c.us` | `number@s.whatsapp.net` |
+| RAM per client | ~300–500 MB | ~10–50 MB |
+| Chrome required | ✅ Yes | ❌ No |
+| API endpoints | unchanged | identical |
+
+**API endpoints are 100% backward-compatible.** Just update number formats and `npm install`.
 
 ---
 

@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
-import { MessageMedia, Buttons } from 'whatsapp-web.js';
-import { sessions, startSession, destroySession } from '../clientManager.js';
+import { sessions, startSession, destroySession, logoutSession, sendText, sendMedia, toJid } from '../clientManager.js';
 import type {
   SendMessageBody,
   SendMediaBody,
@@ -12,7 +11,7 @@ import type {
 
 const router = Router();
 
-// ─── Helper ────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getSessionOrError(id: string, res: Response) {
   const session = sessions.get(id);
@@ -25,7 +24,7 @@ function getSessionOrError(id: string, res: Response) {
 
 function requireReady(session: ReturnType<typeof sessions.get>, res: Response): boolean {
   if (!session) return false;
-  if (!session.isReady) {
+  if (!session.isReady || !session.sock) {
     res.status(503).json({
       error: 'Service Unavailable',
       message: `Client ${session.id} is not ready. Initialize and scan QR first.`,
@@ -35,18 +34,18 @@ function requireReady(session: ReturnType<typeof sessions.get>, res: Response): 
   return true;
 }
 
-// ─── Status ─────────────────────────────────────────────────────────────────
+// ─── Status ───────────────────────────────────────────────────────────────────
 
 router.get('/:id', (req: Request, res: Response) => {
   const session = getSessionOrError(req.params.id, res);
   if (!session) return;
 
-  if (session.isReady && session.client.info) {
+  if (session.isReady) {
     res.json({
       status: 'ready',
       clientId: session.id,
-      phone: session.client.info.wid?.user,
-      name: session.client.info.pushname,
+      phone: session.phone,
+      name: session.name,
     });
   } else if (session.isInitialized) {
     res.json({ status: 'initializing', clientId: session.id });
@@ -67,12 +66,12 @@ router.get('/:id/status', (req: Request, res: Response) => {
     isInitialized: session.isInitialized,
     isReady: session.isReady,
     disconnected: session.disconnected,
-    phone: session.isReady && session.client.info ? session.client.info.wid?.user ?? null : null,
-    name: session.isReady && session.client.info ? session.client.info.pushname ?? null : null,
+    phone: session.phone ?? null,
+    name: session.name ?? null,
   });
 });
 
-// ─── Init / QR / Logout / Exit ───────────────────────────────────────────
+// ─── Init / QR / Logout / Exit ────────────────────────────────────────────────
 
 router.post('/:id/init', async (req: Request, res: Response) => {
   const session = getSessionOrError(req.params.id, res);
@@ -82,6 +81,7 @@ router.post('/:id/init', async (req: Request, res: Response) => {
     return;
   }
   try {
+    // Fire-and-forget; connection happens asynchronously via events
     startSession(session.id).catch((err: unknown) => {
       const msg = err instanceof Error ? err.message : String(err);
       console.error(`[${session.id}] Init error: ${msg}`);
@@ -93,7 +93,7 @@ router.post('/:id/init', async (req: Request, res: Response) => {
   }
 });
 
-// Keep GET /init for backward-compat
+// Backward-compat GET init
 router.get('/:id/init', async (req: Request, res: Response) => {
   const session = getSessionOrError(req.params.id, res);
   if (!session) return;
@@ -115,12 +115,23 @@ router.get('/:id/qr', (req: Request, res: Response) => {
     res.json({ message: 'Client is already authenticated' });
     return;
   }
+
   if (session.qrData) {
+    // Generate QR as ASCII SVG via a free online renderer
+    const encoded = encodeURIComponent(session.qrData);
     res.send(`
-      <!DOCTYPE html><html><head><title>QR - Client ${session.id}</title></head>
-      <body style="font-family:sans-serif;text-align:center;padding:2rem">
+      <!DOCTYPE html><html>
+      <head>
+        <title>QR — Client ${session.id}</title>
+        <style>body{font-family:sans-serif;text-align:center;padding:2rem}</style>
+      </head>
+      <body>
         <h2>Scan QR — Client ${session.id}</h2>
-        <img src="${session.qrData}" alt="QR Code" />
+        <img
+          src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encoded}"
+          alt="QR Code"
+          width="300" height="300"
+        />
         <p>Page refreshes every 5 seconds</p>
         <script>setTimeout(()=>location.reload(),5000)</script>
       </body></html>
@@ -138,12 +149,12 @@ router.get('/:id/qr', (req: Request, res: Response) => {
 router.post('/:id/logout', async (req: Request, res: Response) => {
   const session = getSessionOrError(req.params.id, res);
   if (!session) return;
-  if (session.disconnected) {
+  if (session.disconnected || !session.sock) {
     res.status(400).json({ error: 'Bad Request', message: 'Client is not connected' });
     return;
   }
   try {
-    await session.client.logout();
+    await logoutSession(session.id);
     res.json({ message: `Client ${session.id} logged out` });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -151,15 +162,15 @@ router.post('/:id/logout', async (req: Request, res: Response) => {
   }
 });
 
-// Keep GET /logout for backward-compat
+// Backward-compat GET logout
 router.get('/:id/logout', async (req: Request, res: Response) => {
   const session = getSessionOrError(req.params.id, res);
   if (!session) return;
-  if (session.disconnected) {
+  if (session.disconnected || !session.sock) {
     res.send('Client is not logged in');
     return;
   }
-  await session.client.logout();
+  await logoutSession(session.id).catch(console.error);
   res.send('Client logged out');
 });
 
@@ -179,7 +190,7 @@ router.post('/:id/exit', async (req: Request, res: Response) => {
   }
 });
 
-// Keep GET /exit for backward-compat
+// Backward-compat GET exit
 router.get('/:id/exit', async (req: Request, res: Response) => {
   const session = getSessionOrError(req.params.id, res);
   if (!session) return;
@@ -191,7 +202,7 @@ router.get('/:id/exit', async (req: Request, res: Response) => {
   res.send('Client exited');
 });
 
-// ─── Messaging ───────────────────────────────────────────────────────────────
+// ─── Messaging ────────────────────────────────────────────────────────────────
 
 router.post('/:id/send', async (req: Request, res: Response) => {
   const session = getSessionOrError(req.params.id, res);
@@ -204,8 +215,8 @@ router.post('/:id/send', async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await session.client.sendMessage(number, message);
-    res.json({ success: true, messageId: result.id._serialized });
+    const messageId = await sendText(session.sock!, number, message);
+    res.json({ success: true, messageId });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: 'Internal Server Error', message: msg });
@@ -223,9 +234,8 @@ router.post('/:id/sendMedia', async (req: Request, res: Response) => {
   }
 
   try {
-    const media = await MessageMedia.fromUrl(mediaUrl);
-    const result = await session.client.sendMessage(number, media, { caption: caption ?? '' });
-    res.json({ success: true, messageId: result.id._serialized });
+    const messageId = await sendMedia(session.sock!, number, mediaUrl, caption ?? '');
+    res.json({ success: true, messageId });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: 'Internal Server Error', message: msg });
@@ -245,8 +255,8 @@ router.post('/:id/sendBulk', async (req: Request, res: Response) => {
   const results: BulkResult[] = [];
   for (const number of numbers) {
     try {
-      const result = await session.client.sendMessage(number, message);
-      results.push({ number, success: true, messageId: result.id._serialized });
+      const messageId = await sendText(session.sock!, number, message);
+      results.push({ number, success: true, messageId });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       results.push({ number, success: false, error: msg });
@@ -261,32 +271,80 @@ router.post('/:id/sendButtons', async (req: Request, res: Response) => {
   const session = getSessionOrError(req.params.id, res);
   if (!session || !requireReady(session, res)) return;
 
-  const { number, body, buttons, title, footer } = req.body as Partial<SendButtonsBody>;
+  const { number, body, buttons, footer } = req.body as Partial<SendButtonsBody>;
   if (!number || !body || !Array.isArray(buttons) || !buttons.length) {
     res.status(400).json({ error: 'Bad Request', message: 'Missing required fields: number, body, buttons' });
     return;
   }
 
   try {
-    const btns = new Buttons(body, buttons, title ?? '', footer ?? '');
-    const result = await session.client.sendMessage(number, btns);
-    res.json({ success: true, messageId: result.id._serialized });
+    const jid = toJid(number);
+    // Baileys uses templateButtons or listMessage for interactive messages.
+    // Button messages (type 2) are frequently blocked by WA; we send as plain
+    // text with a formatted button list as a graceful fallback.
+    const formattedText =
+      `${body}\n\n` +
+      buttons.map((b, i) => `${i + 1}. ${b.body}`).join('\n') +
+      (footer ? `\n\n_${footer}_` : '');
+
+    const result = await session.sock!.sendMessage(jid, { text: formattedText });
+    res.json({
+      success: true,
+      messageId: result?.key.id ?? '',
+      note: 'Buttons rendered as formatted text (WA native button messages are restricted by Meta).',
+    });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    // Buttons may not be supported in all WA versions
     res.status(500).json({ error: 'Internal Server Error', message: msg });
   }
 });
 
-// ─── Data Endpoints ──────────────────────────────────────────────────────────
+// ─── Data Endpoints ───────────────────────────────────────────────────────────
 
 router.get('/:id/contacts', async (req: Request, res: Response) => {
   const session = getSessionOrError(req.params.id, res);
   if (!session || !requireReady(session, res)) return;
 
   try {
-    const contacts = await session.client.getContacts();
-    res.json(contacts.map((c) => ({ id: c.id._serialized, name: c.name, pushname: c.pushname, number: c.number, isGroup: c.isGroup, isMyContact: c.isMyContact })));
+    // Baileys exposes contacts through the store; we return what we know
+    const sock = session.sock!;
+    // @ts-expect-error — store is attached at runtime when configured
+    const store = sock.store as Record<string, unknown> | undefined;
+
+    if (store?.contacts) {
+      const contacts = Object.values(store.contacts as Record<string, { id: string; name?: string; notify?: string }>) as Array<{
+        id: string;
+        name?: string;
+        notify?: string;
+      }>;
+      res.json(
+        contacts.map((c) => ({
+          id: c.id,
+          name: c.name ?? c.notify ?? null,
+          pushname: c.notify ?? null,
+          number: c.id.split('@')[0] ?? '',
+          isGroup: c.id.endsWith('@g.us'),
+        })),
+      );
+    } else {
+      // Fallback: return group participants
+      const groups = await sock.groupFetchAllParticipating();
+      const participants = new Map<string, { id: string }>();
+      for (const g of Object.values(groups)) {
+        for (const p of g.participants) {
+          participants.set(p.id, p);
+        }
+      }
+      res.json(
+        [...participants.values()].map((p) => ({
+          id: p.id,
+          name: null,
+          pushname: null,
+          number: p.id.split('@')[0] ?? '',
+          isGroup: false,
+        })),
+      );
+    }
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: 'Internal Server Error', message: msg });
@@ -301,17 +359,39 @@ router.get('/:id/chats', async (req: Request, res: Response) => {
   const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? '20'), 10)));
 
   try {
-    const chats = await session.client.getChats();
+    const sock = session.sock!;
+    // @ts-expect-error — store attached at runtime
+    const store = sock.store as Record<string, unknown> | undefined;
+
+    type ChatEntry = { id: string; name?: string; unreadCount?: number; conversationTimestamp?: number | bigint };
+    let chats: ChatEntry[] = [];
+
+    if (store?.chats) {
+      chats = (Object.values(store.chats as Record<string, ChatEntry>) as ChatEntry[]);
+    } else {
+      // Fallback: use groups as available data
+      const groups = await sock.groupFetchAllParticipating();
+      chats = Object.values(groups).map((g) => ({
+        id: g.id,
+        name: g.subject,
+        unreadCount: 0,
+        conversationTimestamp: 0,
+      }));
+    }
+
     const total = chats.length;
     const start = (page - 1) * limit;
     const slice = chats.slice(start, start + limit).map((c) => ({
-      id: c.id._serialized,
-      name: c.name,
-      isGroup: c.isGroup,
-      unreadCount: c.unreadCount,
-      timestamp: c.timestamp,
-      lastMessage: c.lastMessage?.body ?? null,
+      id: c.id,
+      name: c.name ?? null,
+      isGroup: c.id.endsWith('@g.us'),
+      unreadCount: c.unreadCount ?? 0,
+      timestamp: typeof c.conversationTimestamp === 'bigint'
+        ? Number(c.conversationTimestamp)
+        : (c.conversationTimestamp ?? null),
+      lastMessage: null,
     }));
+
     res.json({ total, page, limit, data: slice });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -319,13 +399,13 @@ router.get('/:id/chats', async (req: Request, res: Response) => {
   }
 });
 
-// Keep old route for backward-compat
+// Backward-compat
 router.get('/:id/getChats', async (req: Request, res: Response) => {
   const session = getSessionOrError(req.params.id, res);
   if (!session || !requireReady(session, res)) return;
   try {
-    const chats = await session.client.getChats();
-    res.json(chats);
+    const groups = await session.sock!.groupFetchAllParticipating();
+    res.json(Object.values(groups));
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: 'Internal Server Error', message: msg });
@@ -341,33 +421,62 @@ router.get('/:id/chats/:chatId/messages', async (req: Request, res: Response) =>
   const page = Math.max(1, parseInt(String(req.query.page ?? '1'), 10));
 
   try {
-    const chat = await session.client.getChatById(chatId);
-    const messages = await chat.fetchMessages({ limit: limit * page });
-    const slice = messages.slice((page - 1) * limit, page * limit).map((m) => ({
-      id: m.id._serialized,
-      body: m.body,
-      from: m.from,
-      to: m.to,
-      timestamp: m.timestamp,
-      type: m.type,
-      hasMedia: m.hasMedia,
-      isForwarded: m.isForwarded,
+    const sock = session.sock!;
+    // @ts-expect-error — store attached at runtime
+    const store = sock.store as Record<string, unknown> | undefined;
+
+    type MessageEntry = {
+      key: { id?: string; remoteJid?: string; fromMe?: boolean };
+      message?: Record<string, unknown>;
+      messageTimestamp?: number | bigint;
+    };
+
+    let msgs: MessageEntry[] = [];
+
+    if (store?.messages) {
+      const chatMessages = (store.messages as Record<string, { array?: MessageEntry[] }>)[chatId];
+      msgs = chatMessages?.array ?? [];
+    }
+
+    const total = msgs.length;
+    const start = (page - 1) * limit;
+    const slice = msgs.slice(start, start + limit).map((m) => ({
+      id: m.key.id ?? null,
+      body: (m.message?.conversation as string | undefined) ??
+            ((m.message?.extendedTextMessage as { text?: string } | undefined)?.text) ??
+            '',
+      from: m.key.fromMe ? (session.phone ?? '') : (m.key.remoteJid ?? ''),
+      to: m.key.fromMe ? (m.key.remoteJid ?? '') : (session.phone ?? ''),
+      timestamp: typeof m.messageTimestamp === 'bigint'
+        ? Number(m.messageTimestamp)
+        : (m.messageTimestamp ?? null),
+      type: m.message ? Object.keys(m.message)[0] ?? 'unknown' : 'unknown',
+      hasMedia: !!(m.message?.imageMessage ?? m.message?.videoMessage ?? m.message?.documentMessage),
+      isForwarded: false,
     }));
-    res.json({ chatId, page, limit, data: slice });
+
+    res.json({ chatId, page, limit, total, data: slice });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: 'Internal Server Error', message: msg });
   }
 });
 
-// Keep old route for backward-compat
+// Backward-compat
 router.get('/:id/getChatMessages/:chatId', async (req: Request, res: Response) => {
   const session = getSessionOrError(req.params.id, res);
   if (!session || !requireReady(session, res)) return;
   try {
-    const chat = await session.client.getChatById(req.params.chatId);
-    const messages = await chat.fetchMessages({ limit: 50 });
-    res.json(messages);
+    const sock = session.sock!;
+    // @ts-expect-error — store attached at runtime
+    const store = sock.store as Record<string, unknown> | undefined;
+    type MessageEntry = { key: unknown; message?: unknown };
+    let msgs: MessageEntry[] = [];
+    if (store?.messages) {
+      const chatMessages = (store.messages as Record<string, { array?: MessageEntry[] }>)[req.params.chatId];
+      msgs = chatMessages?.array ?? [];
+    }
+    res.json(msgs.slice(0, 50));
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: 'Internal Server Error', message: msg });

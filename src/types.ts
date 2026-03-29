@@ -1,12 +1,14 @@
-import type { Client } from 'whatsapp-web.js';
+import type { WASocket } from '@whiskeysockets/baileys';
 
 export interface ClientSession {
   id: string;
-  client: Client;
+  sock: WASocket | null;
   isInitialized: boolean;
   isReady: boolean;
-  qrData: string | null;
+  qrData: string | null; // raw QR string (not data URL)
   disconnected: boolean;
+  phone: string | null;
+  name: string | null;
 }
 
 export interface SendMessageBody {
