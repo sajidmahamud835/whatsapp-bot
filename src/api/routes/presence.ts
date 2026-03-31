@@ -11,7 +11,7 @@ type PresenceType = typeof VALID_PRESENCE[number];
 // ─── POST /:id/presence/update ────────────────────────────────────────────────
 
 router.post('/:id/presence/update', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { jid, presence } = req.body as { jid?: string; presence?: string };
@@ -43,7 +43,7 @@ router.post('/:id/presence/update', async (req: Request, res: Response) => {
 // ─── POST /:id/presence/subscribe ────────────────────────────────────────────
 
 router.post('/:id/presence/subscribe', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { number } = req.body as { number?: string };

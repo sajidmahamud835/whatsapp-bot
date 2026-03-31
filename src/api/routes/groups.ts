@@ -8,7 +8,7 @@ const router = Router();
 // ─── POST /:id/groups/create ──────────────────────────────────────────────────
 
 router.post('/:id/groups/create', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { name, participants } = req.body as { name?: string; participants?: string[] };
@@ -29,7 +29,7 @@ router.post('/:id/groups/create', async (req: Request, res: Response) => {
 // ─── POST /:id/groups/join ────────────────────────────────────────────────────
 
 router.post('/:id/groups/join', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { inviteCode } = req.body as { inviteCode?: string };
@@ -50,7 +50,7 @@ router.post('/:id/groups/join', async (req: Request, res: Response) => {
 // ─── GET /:id/groups ──────────────────────────────────────────────────────────
 
 router.get('/:id/groups', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   try {
@@ -72,11 +72,11 @@ router.get('/:id/groups', async (req: Request, res: Response) => {
 // ─── GET /:id/groups/:groupId ─────────────────────────────────────────────────
 
 router.get('/:id/groups/:groupId', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   try {
-    const jid = req.params.groupId!.includes('@') ? req.params.groupId! : `${req.params.groupId}@g.us`;
+    const jid = (req.params.groupId as string)!.includes('@') ? (req.params.groupId as string)! : `${(req.params.groupId as string)}@g.us`;
     const metadata = await session.sock!.groupMetadata(jid);
     res.json({ success: true, data: metadata });
   } catch (err: unknown) {
@@ -87,11 +87,11 @@ router.get('/:id/groups/:groupId', async (req: Request, res: Response) => {
 // ─── GET /:id/groups/:groupId/invite ──────────────────────────────────────────
 
 router.get('/:id/groups/:groupId/invite', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   try {
-    const jid = req.params.groupId!.includes('@') ? req.params.groupId! : `${req.params.groupId}@g.us`;
+    const jid = (req.params.groupId as string)!.includes('@') ? (req.params.groupId as string)! : `${(req.params.groupId as string)}@g.us`;
     const code = await session.sock!.groupInviteCode(jid);
     res.json({ success: true, inviteCode: code, inviteLink: `https://chat.whatsapp.com/${code}` });
   } catch (err: unknown) {
@@ -102,11 +102,11 @@ router.get('/:id/groups/:groupId/invite', async (req: Request, res: Response) =>
 // ─── POST /:id/groups/:groupId/revoke-invite ──────────────────────────────────
 
 router.post('/:id/groups/:groupId/revoke-invite', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   try {
-    const jid = req.params.groupId!.includes('@') ? req.params.groupId! : `${req.params.groupId}@g.us`;
+    const jid = (req.params.groupId as string)!.includes('@') ? (req.params.groupId as string)! : `${(req.params.groupId as string)}@g.us`;
     const newCode = await session.sock!.groupRevokeInvite(jid);
     res.json({ success: true, newInviteCode: newCode, newInviteLink: `https://chat.whatsapp.com/${newCode}` });
   } catch (err: unknown) {
@@ -117,7 +117,7 @@ router.post('/:id/groups/:groupId/revoke-invite', async (req: Request, res: Resp
 // ─── POST /:id/groups/:groupId/add ───────────────────────────────────────────
 
 router.post('/:id/groups/:groupId/add', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { participants } = req.body as { participants?: string[] };
@@ -127,7 +127,7 @@ router.post('/:id/groups/:groupId/add', async (req: Request, res: Response) => {
   }
 
   try {
-    const jid = req.params.groupId!.includes('@') ? req.params.groupId! : `${req.params.groupId}@g.us`;
+    const jid = (req.params.groupId as string)!.includes('@') ? (req.params.groupId as string)! : `${(req.params.groupId as string)}@g.us`;
     const jids = participants.map(toJid);
     const result = await session.sock!.groupParticipantsUpdate(jid, jids, 'add');
     res.json({ success: true, result });
@@ -139,7 +139,7 @@ router.post('/:id/groups/:groupId/add', async (req: Request, res: Response) => {
 // ─── POST /:id/groups/:groupId/remove ────────────────────────────────────────
 
 router.post('/:id/groups/:groupId/remove', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { participants } = req.body as { participants?: string[] };
@@ -149,7 +149,7 @@ router.post('/:id/groups/:groupId/remove', async (req: Request, res: Response) =
   }
 
   try {
-    const jid = req.params.groupId!.includes('@') ? req.params.groupId! : `${req.params.groupId}@g.us`;
+    const jid = (req.params.groupId as string)!.includes('@') ? (req.params.groupId as string)! : `${(req.params.groupId as string)}@g.us`;
     const jids = participants.map(toJid);
     const result = await session.sock!.groupParticipantsUpdate(jid, jids, 'remove');
     res.json({ success: true, result });
@@ -161,7 +161,7 @@ router.post('/:id/groups/:groupId/remove', async (req: Request, res: Response) =
 // ─── POST /:id/groups/:groupId/promote ───────────────────────────────────────
 
 router.post('/:id/groups/:groupId/promote', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { participants } = req.body as { participants?: string[] };
@@ -171,7 +171,7 @@ router.post('/:id/groups/:groupId/promote', async (req: Request, res: Response) 
   }
 
   try {
-    const jid = req.params.groupId!.includes('@') ? req.params.groupId! : `${req.params.groupId}@g.us`;
+    const jid = (req.params.groupId as string)!.includes('@') ? (req.params.groupId as string)! : `${(req.params.groupId as string)}@g.us`;
     const jids = participants.map(toJid);
     const result = await session.sock!.groupParticipantsUpdate(jid, jids, 'promote');
     res.json({ success: true, result });
@@ -183,7 +183,7 @@ router.post('/:id/groups/:groupId/promote', async (req: Request, res: Response) 
 // ─── POST /:id/groups/:groupId/demote ────────────────────────────────────────
 
 router.post('/:id/groups/:groupId/demote', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { participants } = req.body as { participants?: string[] };
@@ -193,7 +193,7 @@ router.post('/:id/groups/:groupId/demote', async (req: Request, res: Response) =
   }
 
   try {
-    const jid = req.params.groupId!.includes('@') ? req.params.groupId! : `${req.params.groupId}@g.us`;
+    const jid = (req.params.groupId as string)!.includes('@') ? (req.params.groupId as string)! : `${(req.params.groupId as string)}@g.us`;
     const jids = participants.map(toJid);
     const result = await session.sock!.groupParticipantsUpdate(jid, jids, 'demote');
     res.json({ success: true, result });
@@ -205,7 +205,7 @@ router.post('/:id/groups/:groupId/demote', async (req: Request, res: Response) =
 // ─── PUT /:id/groups/:groupId — update name/desc/photo ───────────────────────
 
 router.put('/:id/groups/:groupId', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { name, description, photo } = req.body as {
@@ -219,7 +219,7 @@ router.put('/:id/groups/:groupId', async (req: Request, res: Response) => {
     return;
   }
 
-  const jid = req.params.groupId!.includes('@') ? req.params.groupId! : `${req.params.groupId}@g.us`;
+  const jid = (req.params.groupId as string)!.includes('@') ? (req.params.groupId as string)! : `${(req.params.groupId as string)}@g.us`;
   const errors: string[] = [];
 
   try {
@@ -265,7 +265,7 @@ router.put('/:id/groups/:groupId', async (req: Request, res: Response) => {
 // ─── PUT /:id/groups/:groupId/settings ───────────────────────────────────────
 
 router.put('/:id/groups/:groupId/settings', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { announcement, restrict } = req.body as {
@@ -278,7 +278,7 @@ router.put('/:id/groups/:groupId/settings', async (req: Request, res: Response) 
     return;
   }
 
-  const jid = req.params.groupId!.includes('@') ? req.params.groupId! : `${req.params.groupId}@g.us`;
+  const jid = (req.params.groupId as string)!.includes('@') ? (req.params.groupId as string)! : `${(req.params.groupId as string)}@g.us`;
 
   try {
     if (announcement != null) {

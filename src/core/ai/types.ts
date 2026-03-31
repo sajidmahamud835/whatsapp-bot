@@ -16,4 +16,5 @@ export interface AIProviderOptions {
   baseUrl?: string;
   maxTokens?: number;
   temperature?: number;
+  name?: string;
 }

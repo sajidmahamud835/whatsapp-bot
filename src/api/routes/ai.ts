@@ -83,7 +83,7 @@ router.put('/ai/config', (req: Request, res: Response) => {
 // ─── DELETE /ai/history/:jid ──────────────────────────────────────────────────
 
 router.delete('/ai/history/:jid', (req: Request, res: Response) => {
-  const jid = decodeURIComponent(req.params.jid ?? '');
+  const jid = decodeURIComponent((req.params.jid as string) ?? '');
   aiManager.clearHistory(jid);
   res.json({ success: true, message: `History cleared for ${jid}` });
 });

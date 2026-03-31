@@ -22,7 +22,7 @@ async function resolveBuffer(urlOrBase64: string): Promise<Buffer> {
 // ─── POST /:id/status/text ────────────────────────────────────────────────────
 
 router.post('/:id/status/text', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { text, backgroundColor, font } = req.body as {
@@ -52,7 +52,7 @@ router.post('/:id/status/text', async (req: Request, res: Response) => {
 // ─── POST /:id/status/image ───────────────────────────────────────────────────
 
 router.post('/:id/status/image', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { image, caption } = req.body as { image?: string; caption?: string };
@@ -76,7 +76,7 @@ router.post('/:id/status/image', async (req: Request, res: Response) => {
 // ─── POST /:id/status/video ───────────────────────────────────────────────────
 
 router.post('/:id/status/video', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { video, caption } = req.body as { video?: string; caption?: string };

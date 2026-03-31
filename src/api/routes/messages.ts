@@ -23,7 +23,7 @@ async function resolveBuffer(urlOrBase64: string): Promise<Buffer> {
 // ─── POST /:id/messages/react ─────────────────────────────────────────────────
 
 router.post('/:id/messages/react', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { key, emoji } = req.body as { key?: unknown; emoji?: string };
@@ -47,7 +47,7 @@ router.post('/:id/messages/react', async (req: Request, res: Response) => {
 // ─── POST /:id/messages/poll ──────────────────────────────────────────────────
 
 router.post('/:id/messages/poll', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { number, title, options, singleSelect } = req.body as {
@@ -80,7 +80,7 @@ router.post('/:id/messages/poll', async (req: Request, res: Response) => {
 // ─── POST /:id/messages/viewonce ──────────────────────────────────────────────
 
 router.post('/:id/messages/viewonce', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { number, media, mediaType, caption, mimetype } = req.body as {
@@ -117,7 +117,7 @@ router.post('/:id/messages/viewonce', async (req: Request, res: Response) => {
 // ─── POST /:id/messages/edit ──────────────────────────────────────────────────
 
 router.post('/:id/messages/edit', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { key, newText } = req.body as { key?: unknown; newText?: string };
@@ -143,7 +143,7 @@ router.post('/:id/messages/edit', async (req: Request, res: Response) => {
 // ─── POST /:id/messages/delete ────────────────────────────────────────────────
 
 router.post('/:id/messages/delete', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { key } = req.body as { key?: unknown };
@@ -165,7 +165,7 @@ router.post('/:id/messages/delete', async (req: Request, res: Response) => {
 // ─── POST /:id/messages/reply ─────────────────────────────────────────────────
 
 router.post('/:id/messages/reply', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { key, text } = req.body as { key?: unknown; text?: string };
@@ -192,7 +192,7 @@ router.post('/:id/messages/reply', async (req: Request, res: Response) => {
 // ─── POST /:id/messages/forward ──────────────────────────────────────────────
 
 router.post('/:id/messages/forward', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { key, to } = req.body as { key?: unknown; to?: string };
@@ -219,7 +219,7 @@ router.post('/:id/messages/forward', async (req: Request, res: Response) => {
 // ─── POST /:id/messages/location ─────────────────────────────────────────────
 
 router.post('/:id/messages/location', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { number, latitude, longitude, name } = req.body as {
@@ -248,7 +248,7 @@ router.post('/:id/messages/location', async (req: Request, res: Response) => {
 // ─── POST /:id/messages/contact ──────────────────────────────────────────────
 
 router.post('/:id/messages/contact', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { number, name, contactNumber } = req.body as {
@@ -280,7 +280,7 @@ router.post('/:id/messages/contact', async (req: Request, res: Response) => {
 // ─── POST /:id/messages/sticker ──────────────────────────────────────────────
 
 router.post('/:id/messages/sticker', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { number, sticker } = req.body as { number?: string; sticker?: string };
@@ -302,7 +302,7 @@ router.post('/:id/messages/sticker', async (req: Request, res: Response) => {
 // ─── POST /:id/messages/voice ─────────────────────────────────────────────────
 
 router.post('/:id/messages/voice', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { number, audio, mimetype } = req.body as {
@@ -333,7 +333,7 @@ router.post('/:id/messages/voice', async (req: Request, res: Response) => {
 // ─── POST /:id/messages/read ──────────────────────────────────────────────────
 
 router.post('/:id/messages/read', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { keys } = req.body as { keys?: unknown[] };

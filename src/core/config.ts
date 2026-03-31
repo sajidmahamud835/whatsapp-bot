@@ -106,7 +106,7 @@ class ConfigManager {
     try {
       const raw = readFileSync(CONFIG_PATH, 'utf-8');
       const parsed = JSON.parse(raw) as Partial<AppConfig>;
-      this.config = deepMerge(DEFAULT_CONFIG, parsed);
+      this.config = deepMerge(DEFAULT_CONFIG as unknown as Record<string, unknown>, parsed as unknown as Record<string, unknown>) as unknown as AppConfig;
       this.loaded = true;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

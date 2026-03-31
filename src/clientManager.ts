@@ -6,7 +6,7 @@ import makeWASocket, {
   isJidBroadcast,
   jidNormalizedUser,
 } from '@whiskeysockets/baileys';
-import type { WASocket, BaileysEventMap } from '@whiskeysockets/baileys';
+import type { WASocket } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import pino from 'pino';
 import axios from 'axios';

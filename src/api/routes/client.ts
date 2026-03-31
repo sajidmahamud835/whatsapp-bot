@@ -37,7 +37,7 @@ function requireReady(session: ReturnType<typeof sessions.get>, res: Response): 
 // ─── Status ───────────────────────────────────────────────────────────────────
 
 router.get('/:id', (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session) return;
 
   if (session.isReady) {
@@ -59,7 +59,7 @@ router.get('/:id', (req: Request, res: Response) => {
 });
 
 router.get('/:id/status', (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session) return;
   res.json({
     id: session.id,
@@ -74,7 +74,7 @@ router.get('/:id/status', (req: Request, res: Response) => {
 // ─── Init / QR / Logout / Exit ────────────────────────────────────────────────
 
 router.post('/:id/init', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session) return;
   if (session.isInitialized) {
     res.json({ message: `Client ${session.id} is already initializing or ready` });
@@ -94,7 +94,7 @@ router.post('/:id/init', async (req: Request, res: Response) => {
 
 // Backward-compat GET init
 router.get('/:id/init', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session) return;
   if (session.isInitialized) {
     res.send('Client is already initializing or ready');
@@ -107,7 +107,7 @@ router.get('/:id/init', async (req: Request, res: Response) => {
 });
 
 router.get('/:id/qr', (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session) return;
 
   if (session.isReady) {
@@ -147,7 +147,7 @@ router.get('/:id/qr', (req: Request, res: Response) => {
 });
 
 router.post('/:id/logout', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session) return;
   if (session.disconnected || !session.sock) {
     res.status(400).json({ error: 'Bad Request', message: 'Client is not connected' });
@@ -164,7 +164,7 @@ router.post('/:id/logout', async (req: Request, res: Response) => {
 
 // Backward-compat GET logout
 router.get('/:id/logout', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session) return;
   if (session.disconnected || !session.sock) {
     res.send('Client is not logged in');
@@ -175,7 +175,7 @@ router.get('/:id/logout', async (req: Request, res: Response) => {
 });
 
 router.post('/:id/exit', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session) return;
   if (!session.isInitialized) {
     res.status(400).json({ error: 'Bad Request', message: 'Client is not initialized' });
@@ -192,7 +192,7 @@ router.post('/:id/exit', async (req: Request, res: Response) => {
 
 // Backward-compat GET exit
 router.get('/:id/exit', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session) return;
   if (!session.isInitialized) {
     res.send('Client is not initialized');
@@ -205,7 +205,7 @@ router.get('/:id/exit', async (req: Request, res: Response) => {
 // ─── Messaging ────────────────────────────────────────────────────────────────
 
 router.post('/:id/send', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { number, message } = req.body as Partial<SendMessageBody>;
@@ -224,7 +224,7 @@ router.post('/:id/send', async (req: Request, res: Response) => {
 });
 
 router.post('/:id/sendMedia', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { number, mediaUrl, caption } = req.body as Partial<SendMediaBody>;
@@ -243,7 +243,7 @@ router.post('/:id/sendMedia', async (req: Request, res: Response) => {
 });
 
 router.post('/:id/sendBulk', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { numbers, message } = req.body as Partial<SendBulkBody>;
@@ -268,7 +268,7 @@ router.post('/:id/sendBulk', async (req: Request, res: Response) => {
 });
 
 router.post('/:id/sendButtons', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { number, body, buttons, footer } = req.body as Partial<SendButtonsBody>;
@@ -299,7 +299,7 @@ router.post('/:id/sendButtons', async (req: Request, res: Response) => {
 // ─── Data Endpoints ───────────────────────────────────────────────────────────
 
 router.get('/:id/contacts', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   try {
@@ -347,7 +347,7 @@ router.get('/:id/contacts', async (req: Request, res: Response) => {
 });
 
 router.get('/:id/chats', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const page = Math.max(1, parseInt(String(req.query['page'] ?? '1'), 10));
@@ -395,7 +395,7 @@ router.get('/:id/chats', async (req: Request, res: Response) => {
 
 // Backward-compat
 router.get('/:id/getChats', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
   try {
     const groups = await session.sock!.groupFetchAllParticipating();
@@ -407,10 +407,10 @@ router.get('/:id/getChats', async (req: Request, res: Response) => {
 });
 
 router.get('/:id/chats/:chatId/messages', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
-  const { chatId } = req.params;
+  const chatId = req.params.chatId as string;
   const limit = Math.min(100, Math.max(1, parseInt(String(req.query['limit'] ?? '20'), 10)));
   const page = Math.max(1, parseInt(String(req.query['page'] ?? '1'), 10));
 
@@ -458,7 +458,7 @@ router.get('/:id/chats/:chatId/messages', async (req: Request, res: Response) =>
 
 // Backward-compat
 router.get('/:id/getChatMessages/:chatId', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
   try {
     const sock = session.sock!;
@@ -467,7 +467,7 @@ router.get('/:id/getChatMessages/:chatId', async (req: Request, res: Response) =
     type MessageEntry = { key: unknown; message?: unknown };
     let msgs: MessageEntry[] = [];
     if (store?.messages) {
-      const chatMessages = (store.messages as Record<string, { array?: MessageEntry[] }>)[req.params.chatId!];
+      const chatMessages = (store.messages as Record<string, { array?: MessageEntry[] }>)[(req.params.chatId as string)!];
       msgs = chatMessages?.array ?? [];
     }
     res.json(msgs.slice(0, 50));

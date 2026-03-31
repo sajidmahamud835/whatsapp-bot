@@ -41,7 +41,7 @@ router.get('/config', (_req: Request, res: Response) => {
 // ─── GET /config/:path — specific value (dot notation) ───────────────────────
 
 router.get('/config/:path(*)', (req: Request, res: Response) => {
-  const path = req.params['path'];
+  const path = (req.params['path'] as string);
   if (!path) {
     res.status(400).json({ error: 'Bad Request', message: 'Missing path parameter' });
     return;
@@ -68,7 +68,7 @@ router.get('/config/:path(*)', (req: Request, res: Response) => {
 // ─── PUT /config/:path — set value ───────────────────────────────────────────
 
 router.put('/config/:path(*)', (req: Request, res: Response) => {
-  const path = req.params['path'];
+  const path = (req.params['path'] as string);
   if (!path) {
     res.status(400).json({ error: 'Bad Request', message: 'Missing path parameter' });
     return;

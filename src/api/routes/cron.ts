@@ -45,7 +45,7 @@ router.post('/cron', async (req: Request, res: Response) => {
 // ─── PUT /cron/:id — update job ───────────────────────────────────────────────
 
 router.put('/cron/:id', async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   try {
     const job = await cronManager.updateJob(id!, req.body as any);
     res.json({ success: true, job });
@@ -62,7 +62,7 @@ router.put('/cron/:id', async (req: Request, res: Response) => {
 // ─── DELETE /cron/:id — delete job ───────────────────────────────────────────
 
 router.delete('/cron/:id', (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   try {
     cronManager.deleteJob(id!);
     res.json({ success: true, message: `Cron job ${id} deleted` });
@@ -77,7 +77,7 @@ router.delete('/cron/:id', (req: Request, res: Response) => {
 // ─── POST /cron/:id/run — run job now ────────────────────────────────────────
 
 router.post('/cron/:id/run', async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   try {
     await cronManager.runJobNow(id!);
     res.json({ success: true, message: `Cron job ${id} executed` });

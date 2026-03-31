@@ -1,4 +1,4 @@
-import { getApiBase, buildHeaders, handleApiError, printTable, color, success, error } from '../utils.js';
+import { getApiBase, buildHeaders, handleApiError, printTable, color, error } from '../utils.js';
 
 interface HealthResponse {
   status: string;

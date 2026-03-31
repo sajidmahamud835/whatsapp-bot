@@ -8,7 +8,7 @@ const router = Router();
 // ─── POST /:id/contacts/check ─────────────────────────────────────────────────
 
 router.post('/:id/contacts/check', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { numbers } = req.body as { numbers?: string[] };
@@ -18,7 +18,7 @@ router.post('/:id/contacts/check', async (req: Request, res: Response) => {
   }
 
   try {
-    const results = await session.sock!.onWhatsApp(...numbers);
+    const results = await session.sock!.onWhatsApp(...numbers) ?? [];
     res.json({
       success: true,
       data: results.map((r) => ({
@@ -35,17 +35,17 @@ router.post('/:id/contacts/check', async (req: Request, res: Response) => {
 // ─── GET /:id/contacts/:jid/profile-pic ───────────────────────────────────────
 
 router.get('/:id/contacts/:jid/profile-pic', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   try {
-    const jid = toJid(req.params.jid!);
+    const jid = toJid((req.params.jid as string)!);
     const url = await session.sock!.profilePictureUrl(jid, 'image');
     res.json({ success: true, jid, profilePictureUrl: url ?? null });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.includes('404') || msg.toLowerCase().includes('not found')) {
-      res.json({ success: true, jid: toJid(req.params.jid!), profilePictureUrl: null });
+      res.json({ success: true, jid: toJid((req.params.jid as string)!), profilePictureUrl: null });
     } else {
       res.status(500).json({ error: 'Internal Server Error', message: msg });
     }
@@ -55,17 +55,20 @@ router.get('/:id/contacts/:jid/profile-pic', async (req: Request, res: Response)
 // ─── GET /:id/contacts/:jid/about ─────────────────────────────────────────────
 
 router.get('/:id/contacts/:jid/about', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   try {
-    const jid = toJid(req.params.jid!);
-    const status = await session.sock!.fetchStatus(jid);
+    const jid = toJid((req.params.jid as string)!);
+    const statusResult = await session.sock!.fetchStatus(jid);
+    // fetchStatus may return an array or a single object depending on Baileys version
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const statusEntry: any = Array.isArray(statusResult) ? (statusResult as any[])[0] : statusResult;
     res.json({
       success: true,
       jid,
-      about: status?.status ?? null,
-      setAt: status?.setAt ?? null,
+      about: statusEntry?.status ?? null,
+      setAt: statusEntry?.setAt ?? null,
     });
   } catch (err: unknown) {
     res.status(500).json({ error: 'Internal Server Error', message: err instanceof Error ? err.message : String(err) });
@@ -75,11 +78,11 @@ router.get('/:id/contacts/:jid/about', async (req: Request, res: Response) => {
 // ─── GET /:id/contacts/:jid/business ──────────────────────────────────────────
 
 router.get('/:id/contacts/:jid/business', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   try {
-    const jid = toJid(req.params.jid!);
+    const jid = toJid((req.params.jid as string)!);
     const profile = await session.sock!.getBusinessProfile(jid);
     res.json({ success: true, jid, businessProfile: profile ?? null });
   } catch (err: unknown) {
@@ -90,7 +93,7 @@ router.get('/:id/contacts/:jid/business', async (req: Request, res: Response) =>
 // ─── POST /:id/contacts/block ─────────────────────────────────────────────────
 
 router.post('/:id/contacts/block', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { number } = req.body as { number?: string };
@@ -111,7 +114,7 @@ router.post('/:id/contacts/block', async (req: Request, res: Response) => {
 // ─── POST /:id/contacts/unblock ───────────────────────────────────────────────
 
 router.post('/:id/contacts/unblock', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { number } = req.body as { number?: string };
@@ -132,7 +135,7 @@ router.post('/:id/contacts/unblock', async (req: Request, res: Response) => {
 // ─── GET /:id/labels ──────────────────────────────────────────────────────────
 
 router.get('/:id/labels', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   try {
@@ -152,7 +155,7 @@ router.get('/:id/labels', async (req: Request, res: Response) => {
 // ─── POST /:id/labels ─────────────────────────────────────────────────────────
 
 router.post('/:id/labels', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { name, color } = req.body as { name?: string; color?: number };
@@ -178,7 +181,7 @@ router.post('/:id/labels', async (req: Request, res: Response) => {
 // ─── POST /:id/labels/:labelId/assign ────────────────────────────────────────
 
 router.post('/:id/labels/:labelId/assign', async (req: Request, res: Response) => {
-  const session = getSessionOrError(req.params.id, res);
+  const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
   const { jid: chatJid, type } = req.body as { jid?: string; type?: 'add' | 'remove' };
@@ -192,14 +195,14 @@ router.post('/:id/labels/:labelId/assign', async (req: Request, res: Response) =
     const sock = session.sock! as any;
     const action = type === 'remove' ? 'remove' : 'add';
     if (action === 'remove' && typeof sock.removeChatLabel === 'function') {
-      await sock.removeChatLabel(chatJid, req.params.labelId);
+      await sock.removeChatLabel(chatJid, (req.params.labelId as string));
     } else if (typeof sock.addChatLabel === 'function') {
-      await sock.addChatLabel(chatJid, req.params.labelId);
+      await sock.addChatLabel(chatJid, (req.params.labelId as string));
     } else {
       res.status(501).json({ error: 'Not Implemented', message: 'Label assignment not supported by this Baileys build' });
       return;
     }
-    res.json({ success: true, labelId: req.params.labelId, jid: chatJid, action });
+    res.json({ success: true, labelId: (req.params.labelId as string), jid: chatJid, action });
   } catch (err: unknown) {
     res.status(500).json({ error: 'Internal Server Error', message: err instanceof Error ? err.message : String(err) });
   }
