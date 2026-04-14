@@ -21,8 +21,15 @@ export default function Login() {
       useAuthStore.getState().login(key);
       await api.get('/health');
       navigate('/');
-    } catch {
-      setError('Invalid API key or server unreachable');
+    } catch (err: any) {
+      const msg = err?.message || '';
+      if (msg.includes('401') || msg.includes('403')) {
+        setError('Invalid API key. Check your key and try again.');
+      } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('ECONNREFUSED')) {
+        setError('Cannot reach server. Make sure it\'s running.');
+      } else {
+        setError(msg || 'Connection failed. Check API key and server.');
+      }
       useAuthStore.getState().logout();
     } finally {
       setLoading(false);

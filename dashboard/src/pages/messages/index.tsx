@@ -87,13 +87,19 @@ export default function Messages() {
           </select>
         </div>
 
-        <div className="p-3 border-b border-[var(--border)]">
+        <div className="p-3 border-b border-[var(--border)] space-y-2">
           <SearchInput value={search} onChange={setSearch} placeholder="Search conversations..." />
+          <button
+            onClick={() => { setSelectedJid(null); setNumber(''); setTimeout(() => document.getElementById('new-number')?.focus(), 100); }}
+            className="w-full text-left px-3 py-2 rounded-lg border border-dashed border-[var(--border)] text-xs text-[var(--brand)] hover:bg-[var(--brand)]/5 transition-colors"
+          >
+            + New Conversation
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {filteredConvos.length === 0 ? (
-            <p className="text-[var(--text-muted)] text-xs text-center py-8">No conversations yet</p>
+            <p className="text-[var(--text-muted)] text-xs text-center py-8">No conversations yet. Click "New Conversation" above.</p>
           ) : filteredConvos.map(c => (
             <button
               key={c.jid}
@@ -155,6 +161,7 @@ export default function Messages() {
 
         <form onSubmit={handleSend} className="flex items-center gap-3 px-4 py-3 border-t border-[var(--border)]">
           <input
+            id="new-number"
             type="text"
             placeholder="Phone number"
             value={number}

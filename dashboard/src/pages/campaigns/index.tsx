@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api, handleError } from '../../lib/api';
 import { PageHeader } from '../../components/layout/page-header';
 import { Card, CardContent } from '../../components/ui/card';
+import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Input } from '../../components/ui/input';
@@ -21,6 +22,8 @@ const statusVariants: Record<string, 'success' | 'warning' | 'error' | 'info' | 
 export default function Campaigns() {
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
+  const [confirmSendId, setConfirmSendId] = useState<{ id: string; name: string; count: number } | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', client_id: '1', message: '', numbers: '' });
 
   const { data, isLoading } = useQuery({
@@ -84,11 +87,11 @@ export default function Campaigns() {
                     <td className="px-3 py-3">
                       <div className="flex gap-1">
                         {c.status === 'draft' && (
-                          <button onClick={() => sendMutation.mutate(c.id)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors" title="Send now">
+                          <button onClick={() => setConfirmSendId({ id: c.id, name: c.name, count: c.audience_data.length })} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors" title="Send now">
                             <Play className="h-4 w-4" />
                           </button>
                         )}
-                        <button onClick={() => deleteMutation.mutate(c.id)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete">
+                        <button onClick={() => setConfirmDeleteId(c.id)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -114,6 +117,28 @@ export default function Campaigns() {
           </div>
         </form>
       </Modal>
+
+      {/* Confirm Send */}
+      <ConfirmDialog
+        open={!!confirmSendId}
+        onClose={() => setConfirmSendId(null)}
+        onConfirm={() => { if (confirmSendId) sendMutation.mutate(confirmSendId.id); }}
+        title="Send Campaign?"
+        message={`This will send "${confirmSendId?.name}" to ${confirmSendId?.count} recipients immediately. This cannot be undone.`}
+        confirmLabel="Send Now"
+        variant="primary"
+        isLoading={sendMutation.isPending}
+      />
+
+      {/* Confirm Delete */}
+      <ConfirmDialog
+        open={!!confirmDeleteId}
+        onClose={() => setConfirmDeleteId(null)}
+        onConfirm={() => { if (confirmDeleteId) deleteMutation.mutate(confirmDeleteId); }}
+        title="Delete Campaign?"
+        message="This campaign and all its delivery data will be permanently deleted."
+        confirmLabel="Delete"
+      />
     </div>
   );
 }
