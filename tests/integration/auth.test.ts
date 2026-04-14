@@ -1,22 +1,19 @@
+import { jest, describe, test, expect, beforeAll } from '@jest/globals';
 import express from 'express';
 import request from 'supertest';
 
-// We test auth middleware in isolation — no need for the full server
-
-jest.mock('../../src/core/config.js', () => {
-  const apiKey = 'test-secret-key';
-  return {
-    config: {
-      get: (path: string) => {
-        if (path === 'server.apiKey') return apiKey;
-        return undefined;
-      },
-      load: () => {},
+// ESM mock — must use unstable_mockModule before dynamic import
+jest.unstable_mockModule('../../src/core/config.js', () => ({
+  config: {
+    get: (path: string) => {
+      if (path === 'server.apiKey') return 'test-secret-key';
+      return undefined;
     },
-  };
-});
+    load: () => {},
+  },
+}));
 
-jest.mock('../../src/core/logger.js', () => ({
+jest.unstable_mockModule('../../src/core/logger.js', () => ({
   childLogger: () => ({
     info: () => {},
     warn: () => {},

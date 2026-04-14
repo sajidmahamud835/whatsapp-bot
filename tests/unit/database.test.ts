@@ -1,27 +1,22 @@
+import { jest, describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import Database from 'better-sqlite3';
-import { messageStore } from '../../src/core/db/message-store.js';
-import { aiHistoryStore } from '../../src/core/db/ai-history-store.js';
-import { cronLogStore } from '../../src/core/db/cron-log-store.js';
-import { webhookLogStore } from '../../src/core/db/webhook-log-store.js';
-
-// We test the store modules by mocking getDatabase to return an in-memory DB
-// Since the stores call getDatabase() on each operation, we mock the module
 
 let testDb: Database.Database;
 
-jest.mock('../../src/core/db/database.js', () => ({
+// ESM mocks must use unstable_mockModule BEFORE dynamic imports
+jest.unstable_mockModule('../../src/core/db/database.js', () => ({
   getDatabase: () => testDb,
   closeDatabase: () => testDb?.close(),
 }));
 
-jest.mock('../../src/core/config.js', () => ({
+jest.unstable_mockModule('../../src/core/config.js', () => ({
   config: {
     get: () => undefined,
     load: () => {},
   },
 }));
 
-jest.mock('../../src/core/logger.js', () => ({
+jest.unstable_mockModule('../../src/core/logger.js', () => ({
   childLogger: () => ({
     info: () => {},
     warn: () => {},
@@ -36,11 +31,16 @@ jest.mock('../../src/core/logger.js', () => ({
   }),
 }));
 
+// Dynamic imports after mocks are registered
+const { messageStore } = await import('../../src/core/db/message-store.js');
+const { aiHistoryStore } = await import('../../src/core/db/ai-history-store.js');
+const { cronLogStore } = await import('../../src/core/db/cron-log-store.js');
+const { webhookLogStore } = await import('../../src/core/db/webhook-log-store.js');
+
 beforeAll(() => {
   testDb = new Database(':memory:');
   testDb.pragma('journal_mode = WAL');
 
-  // Create tables manually (same as migration 001)
   testDb.exec(`
     CREATE TABLE messages (
       id TEXT PRIMARY KEY,
@@ -130,7 +130,7 @@ describe('messageStore', () => {
 
     const messages = messageStore.getByJid('1', '5551234@s.whatsapp.net');
     expect(messages).toHaveLength(1);
-    expect(messages[0]!.body).toBe('Hello world'); // Original, not duplicate
+    expect(messages[0]!.body).toBe('Hello world');
   });
 
   test('getRecent returns messages', () => {
@@ -152,12 +152,12 @@ describe('aiHistoryStore', () => {
 
     const history = aiHistoryStore.getHistory(testJid, 10);
     expect(history).toHaveLength(2);
-    // Ordered by autoincrement ID (chronological via reverse of DESC)
     expect(history[0]!.content).toBe('Hello');
     expect(history[1]!.content).toBe('Hi there!');
   });
 
   test('clearHistory removes all entries for JID', () => {
+    aiHistoryStore.appendMessage(testJid, 'user', 'test');
     aiHistoryStore.clearHistory(testJid);
     const history = aiHistoryStore.getHistory(testJid, 10);
     expect(history).toHaveLength(0);

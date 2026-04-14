@@ -13,7 +13,7 @@
     "dev": "ts-node-dev --respawn --transpile-only --esm src/api/server.ts",
     "cli": "ts-node --esm src/cli/index.ts",
     "typecheck": "tsc --noEmit",
-    "test": "node --max-old-space-size=512 --experimental-vm-modules node_modules/.bin/jest --config jest.config.ts"
+    "test": "node --experimental-vm-modules --max-old-space-size=512 ./node_modules/jest/bin/jest.js --config jest.config.ts --maxWorkers=1"
   },
   "engines": {
     "node": ">=18"
