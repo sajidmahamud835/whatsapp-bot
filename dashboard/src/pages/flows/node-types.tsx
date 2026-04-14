@@ -54,19 +54,19 @@ function FlowNode({ data, type, selected }: NodeProps & { type: string }) {
           <Icon className={`h-4 w-4 ${colors.icon}`} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold text-[#e6edf3] truncate">{data.label || type}</p>
-          {data.subtitle && <p className="text-[10px] text-[#484f58] truncate">{data.subtitle}</p>}
+          <p className="text-xs font-bold text-[var(--text)] truncate">{data.label || type}</p>
+          {data.subtitle && <p className="text-[10px] text-[var(--text-muted)] truncate">{data.subtitle}</p>}
         </div>
       </div>
 
       {/* Preview content */}
       {data.message && (
-        <div className="px-3.5 py-2 text-[11px] text-[#8b949e] leading-relaxed line-clamp-2">
+        <div className="px-3.5 py-2 text-[11px] text-[var(--text-sec)] leading-relaxed line-clamp-2">
           {data.message}
         </div>
       )}
       {data.description && !data.message && (
-        <div className="px-3.5 py-2 text-[11px] text-[#8b949e]">
+        <div className="px-3.5 py-2 text-[11px] text-[var(--text-sec)]">
           {data.description}
         </div>
       )}

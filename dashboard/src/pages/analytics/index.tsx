@@ -59,7 +59,7 @@ export default function Analytics() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Message Volume */}
         <Card>
-          <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">Message Volume</h3></CardHeader>
+          <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">Message Volume</h3></CardHeader>
           <CardContent>
             {msgData?.data?.length ? (
               <ResponsiveContainer width="100%" height={240}>
@@ -75,8 +75,8 @@ export default function Analytics() {
                   <Area type="monotone" dataKey="received" stroke="#58a6ff" fill="url(#arg)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
-            ) : <p className="text-[#484f58] text-sm text-center py-12">No data</p>}
-            <div className="flex gap-4 mt-2 text-xs text-[#8b949e]">
+            ) : <p className="text-[var(--text-muted)] text-sm text-center py-12">No data</p>}
+            <div className="flex gap-4 mt-2 text-xs text-[var(--text-sec)]">
               <span><span className="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1" />Sent</span>
               <span><span className="inline-block w-2 h-2 rounded-full bg-blue-400 mr-1" />Received</span>
             </div>
@@ -85,7 +85,7 @@ export default function Analytics() {
 
         {/* Top Contacts */}
         <Card>
-          <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">Top Contacts</h3></CardHeader>
+          <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">Top Contacts</h3></CardHeader>
           <CardContent>
             {convoData?.conversations?.length ? (
               <ResponsiveContainer width="100%" height={240}>
@@ -96,7 +96,7 @@ export default function Analytics() {
                   <Bar dataKey="msgs" fill="#25d366" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            ) : <p className="text-[#484f58] text-sm text-center py-12">No data</p>}
+            ) : <p className="text-[var(--text-muted)] text-sm text-center py-12">No data</p>}
           </CardContent>
         </Card>
       </div>

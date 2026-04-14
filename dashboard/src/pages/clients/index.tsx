@@ -59,7 +59,7 @@ export default function Clients() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <StatusDot status={c.isReady ? 'online' : c.isInitialized ? 'connecting' : 'offline'} />
-                    <span className="font-semibold text-[#e6edf3]">Client {c.id}</span>
+                    <span className="font-semibold text-[var(--text)]">Client {c.id}</span>
                   </div>
                   <Badge variant={c.isReady ? 'success' : c.isInitialized ? 'warning' : 'neutral'}>
                     {c.isReady ? 'Ready' : c.isInitialized ? 'Connecting' : 'Idle'}
@@ -67,9 +67,9 @@ export default function Clients() {
                 </div>
 
                 {c.isReady && (
-                  <div className="text-sm text-[#8b949e]">
+                  <div className="text-sm text-[var(--text-sec)]">
                     <p>{c.name || 'Unknown'}</p>
-                    <p className="text-xs text-[#484f58]">{c.phone}</p>
+                    <p className="text-xs text-[var(--text-muted)]">{c.phone}</p>
                   </div>
                 )}
 

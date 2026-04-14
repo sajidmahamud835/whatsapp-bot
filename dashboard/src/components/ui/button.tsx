@@ -2,10 +2,10 @@ import { cn } from '../../lib/utils';
 import { Loader2 } from 'lucide-react';
 
 const variants = {
-  primary: 'bg-emerald-500 hover:bg-emerald-600 text-white',
-  secondary: 'bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3]',
-  danger: 'bg-red-600 hover:bg-red-700 text-white',
-  ghost: 'bg-transparent hover:bg-[#21262d] text-[#8b949e]',
+  primary: 'bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-white',
+  secondary: 'bg-[var(--bg-hover)] hover:bg-[var(--border)] border border-[var(--border)] text-[var(--text)]',
+  danger: 'bg-[var(--danger)] hover:opacity-90 text-white',
+  ghost: 'bg-transparent hover:bg-[var(--bg-hover)] text-[var(--text-sec)]',
 };
 
 const sizes = {
@@ -24,7 +24,7 @@ export function Button({ variant = 'primary', size = 'md', isLoading, className,
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed',
+        'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/40 disabled:opacity-50 disabled:cursor-not-allowed',
         variants[variant],
         sizes[size],
         className,

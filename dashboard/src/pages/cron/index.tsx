@@ -78,19 +78,19 @@ export default function CronJobs() {
         <Card>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead><tr className="border-b border-[#30363d]">
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Name</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Schedule</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Action</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Status</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Runs</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Last Run</th>
+              <thead><tr className="border-b border-[var(--border)]">
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Name</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Schedule</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Action</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Status</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Runs</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Last Run</th>
                 <th className="w-24"></th>
               </tr></thead>
               <tbody>{jobs.map(j => (
-                <tr key={j.id} className="border-b border-[#21262d] hover:bg-[#21262d] transition-colors">
-                  <td className="px-5 py-3 text-sm font-medium text-[#e6edf3]">{j.name}</td>
-                  <td className="px-5 py-3 text-sm text-[#8b949e] font-mono">{j.schedule}</td>
+                <tr key={j.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-hover)] transition-colors">
+                  <td className="px-5 py-3 text-sm font-medium text-[var(--text)]">{j.name}</td>
+                  <td className="px-5 py-3 text-sm text-[var(--text-sec)] font-mono">{j.schedule}</td>
                   <td className="px-5 py-3"><Badge variant="info">{j.action}</Badge></td>
                   <td className="px-5 py-3">
                     <Badge variant={j.isRunning ? 'success' : j.enabled ? 'warning' : 'neutral'}>
@@ -98,11 +98,11 @@ export default function CronJobs() {
                     </Badge>
                     {j.lastError && <p className="text-[10px] text-red-400 mt-0.5 truncate max-w-[150px]">{j.lastError}</p>}
                   </td>
-                  <td className="px-5 py-3 text-sm text-[#8b949e]">{j.runCount}</td>
-                  <td className="px-5 py-3 text-xs text-[#484f58]">{j.lastRun ? new Date(j.lastRun).toLocaleString() : '—'}</td>
+                  <td className="px-5 py-3 text-sm text-[var(--text-sec)]">{j.runCount}</td>
+                  <td className="px-5 py-3 text-xs text-[var(--text-muted)]">{j.lastRun ? new Date(j.lastRun).toLocaleString() : '—'}</td>
                   <td className="px-3 py-3"><div className="flex gap-1">
-                    <button onClick={() => runMutation.mutate(j.id)} className="p-1.5 rounded-lg text-[#484f58] hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors" title="Run now"><Play className="h-4 w-4" /></button>
-                    <button onClick={() => { if (confirm('Delete this job?')) deleteMutation.mutate(j.id); }} className="p-1.5 rounded-lg text-[#484f58] hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete"><Trash2 className="h-4 w-4" /></button>
+                    <button onClick={() => runMutation.mutate(j.id)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors" title="Run now"><Play className="h-4 w-4" /></button>
+                    <button onClick={() => { if (confirm('Delete this job?')) deleteMutation.mutate(j.id); }} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete"><Trash2 className="h-4 w-4" /></button>
                   </div></td>
                 </tr>
               ))}</tbody>
@@ -119,24 +119,24 @@ export default function CronJobs() {
 
           {/* Schedule */}
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-[#e6edf3]">Schedule</label>
+            <label className="block text-sm font-medium text-[var(--text)]">Schedule</label>
             <div className="flex gap-2">
               <Input value={form.schedule} onChange={e => setForm({ ...form, schedule: e.target.value })} placeholder="* * * * *" className="flex-1 font-mono" />
-              <select onChange={e => { if (e.target.value) setForm({ ...form, schedule: e.target.value }); }} className="rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+              <select onChange={e => { if (e.target.value) setForm({ ...form, schedule: e.target.value }); }} className="rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
                 <option value="">Presets...</option>
                 {SCHEDULE_PRESETS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
               </select>
             </div>
-            <p className="text-xs text-[#484f58]">Cron format: minute hour day-of-month month day-of-week</p>
+            <p className="text-xs text-[var(--text-muted)]">Cron format: minute hour day-of-month month day-of-week</p>
           </div>
 
           {/* Action */}
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-[#e6edf3]">Action</label>
+            <label className="block text-sm font-medium text-[var(--text)]">Action</label>
             <div className="grid grid-cols-3 gap-2">
               {ACTION_OPTIONS.map(a => (
                 <button key={a.value} type="button" onClick={() => setForm({ ...form, action: a.value })}
-                  className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${form.action === a.value ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400' : 'border-[#30363d] bg-[#0d1117] text-[#8b949e] hover:border-[#484f58]'}`}>
+                  className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${form.action === a.value ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400' : 'border-[var(--border)] bg-[var(--bg)] text-[var(--text-sec)] hover:border-[var(--border-hover)]'}`}>
                   {a.label}
                 </button>
               ))}

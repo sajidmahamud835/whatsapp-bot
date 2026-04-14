@@ -55,40 +55,40 @@ export default function Campaigns() {
       } />
 
       {isLoading ? (
-        <Card><CardContent><p className="text-[#484f58] text-sm py-8 text-center">Loading...</p></CardContent></Card>
+        <Card><CardContent><p className="text-[var(--text-muted)] text-sm py-8 text-center">Loading...</p></CardContent></Card>
       ) : campaigns.length === 0 ? (
         <EmptyState icon={Megaphone} title="No campaigns" description="Create broadcast campaigns to message your contacts at scale." action={{ label: 'New Campaign', onClick: () => setShowAdd(true) }} />
       ) : (
         <Card>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead><tr className="border-b border-[#30363d]">
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Name</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Status</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Recipients</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Delivery</th>
+              <thead><tr className="border-b border-[var(--border)]">
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Name</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Status</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Recipients</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Delivery</th>
                 <th className="w-24"></th>
               </tr></thead>
               <tbody>
                 {campaigns.map(c => (
-                  <tr key={c.id} className="border-b border-[#21262d] hover:bg-[#21262d] transition-colors">
+                  <tr key={c.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-hover)] transition-colors">
                     <td className="px-5 py-3">
-                      <p className="text-sm font-medium text-[#e6edf3]">{c.name}</p>
-                      <p className="text-xs text-[#484f58] mt-0.5 truncate max-w-xs">{c.message}</p>
+                      <p className="text-sm font-medium text-[var(--text)]">{c.name}</p>
+                      <p className="text-xs text-[var(--text-muted)] mt-0.5 truncate max-w-xs">{c.message}</p>
                     </td>
                     <td className="px-5 py-3"><Badge variant={statusVariants[c.status] ?? 'neutral'}>{c.status}</Badge></td>
-                    <td className="px-5 py-3 text-sm text-[#8b949e]">{c.audience_data.length}</td>
-                    <td className="px-5 py-3 text-sm text-[#8b949e]">
+                    <td className="px-5 py-3 text-sm text-[var(--text-sec)]">{c.audience_data.length}</td>
+                    <td className="px-5 py-3 text-sm text-[var(--text-sec)]">
                       {c.stats ? `${c.stats.sent} sent, ${c.stats.failed} failed` : '—'}
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex gap-1">
                         {c.status === 'draft' && (
-                          <button onClick={() => sendMutation.mutate(c.id)} className="p-1.5 rounded-lg text-[#484f58] hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors" title="Send now">
+                          <button onClick={() => sendMutation.mutate(c.id)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors" title="Send now">
                             <Play className="h-4 w-4" />
                           </button>
                         )}
-                        <button onClick={() => deleteMutation.mutate(c.id)} className="p-1.5 rounded-lg text-[#484f58] hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete">
+                        <button onClick={() => deleteMutation.mutate(c.id)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -107,7 +107,7 @@ export default function Campaigns() {
           <Input label="Client ID" placeholder="1" value={form.client_id} onChange={e => setForm({ ...form, client_id: e.target.value })} />
           <Textarea label="Message" placeholder="Hello! Here's your daily update..." value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} />
           <Textarea label="Recipients (one number per line)" placeholder={"8801XXXXXXXXX\n8801YYYYYYYYY"} value={form.numbers} onChange={e => setForm({ ...form, numbers: e.target.value })} />
-          <p className="text-xs text-[#484f58]">{form.numbers.split('\n').filter(n => n.trim()).length} recipients</p>
+          <p className="text-xs text-[var(--text-muted)]">{form.numbers.split('\n').filter(n => n.trim()).length} recipients</p>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="secondary" type="button" onClick={() => setShowAdd(false)}>Cancel</Button>
             <Button type="submit" isLoading={createMutation.isPending} disabled={!form.name || !form.message || !form.numbers.trim()}>Create Draft</Button>

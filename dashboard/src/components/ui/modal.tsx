@@ -35,11 +35,11 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
             enter="ease-out duration-200" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100"
             leave="ease-in duration-150" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95"
           >
-            <DialogPanel className={`w-full ${sizeClasses[size]} rounded-xl border border-[#30363d] bg-[#161b22] shadow-2xl`}>
+            <DialogPanel className={`w-full ${sizeClasses[size]} rounded-xl border border-[var(--border)] bg-[var(--bg-raised)] shadow-2xl`}>
               {title && (
-                <div className="flex items-center justify-between px-5 py-4 border-b border-[#30363d]">
-                  <DialogTitle className="text-lg font-semibold text-[#e6edf3]">{title}</DialogTitle>
-                  <button onClick={onClose} className="p-1 rounded-lg text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#21262d] transition-colors">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
+                  <DialogTitle className="text-lg font-semibold text-[var(--text)]">{title}</DialogTitle>
+                  <button onClick={onClose} className="p-1 rounded-lg text-[var(--text-sec)] hover:text-[var(--text)] hover:bg-[var(--bg-hover)] transition-colors">
                     <X className="h-5 w-5" />
                   </button>
                 </div>

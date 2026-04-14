@@ -137,22 +137,22 @@ export default function AIConfig() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-[#e6edf3]">AI Providers</h3>
+              <h3 className="text-sm font-semibold text-[var(--text)]">AI Providers</h3>
               <Button size="sm" onClick={() => setShowAddProvider(true)}><Plus className="h-3.5 w-3.5" /> Add Provider</Button>
             </div>
           </CardHeader>
           <CardContent>
             {providers.length === 0 ? (
-              <p className="text-sm text-[#484f58] py-4 text-center">No providers configured. Add one to enable AI auto-reply.</p>
+              <p className="text-sm text-[var(--text-muted)] py-4 text-center">No providers configured. Add one to enable AI auto-reply.</p>
             ) : (
               <div className="space-y-3">
                 {providers.map(name => (
-                  <div key={name} className="flex items-center justify-between rounded-lg border border-[#30363d] bg-[#0d1117] px-4 py-3">
+                  <div key={name} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg)] px-4 py-3">
                     <div className="flex items-center gap-3">
                       <Bot className="h-5 w-5 text-emerald-400" />
                       <div>
-                        <p className="text-sm font-medium text-[#e6edf3]">{name}</p>
-                        <p className="text-xs text-[#484f58]">
+                        <p className="text-sm font-medium text-[var(--text)]">{name}</p>
+                        <p className="text-xs text-[var(--text-muted)]">
                           {name === data?.defaultProvider && <Badge variant="success" className="mr-2">Default</Badge>}
                           {PROVIDER_PRESETS.find(p => name.toLowerCase().includes(p.type))?.label || 'Custom'}
                         </p>
@@ -166,7 +166,7 @@ export default function AIConfig() {
                       )}
                       <button
                         onClick={() => removeProviderMutation.mutate(name)}
-                        className="p-1.5 rounded-lg text-[#484f58] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -181,10 +181,10 @@ export default function AIConfig() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Generation Settings */}
           <Card>
-            <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">Generation Settings</h3></CardHeader>
+            <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">Generation Settings</h3></CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#e6edf3] mb-1.5">Max Tokens</label>
+                <label className="block text-sm font-medium text-[var(--text)] mb-1.5">Max Tokens</label>
                 <div className="flex items-center gap-3">
                   <input
                     type="range"
@@ -195,13 +195,13 @@ export default function AIConfig() {
                     onChange={e => setMaxTokens(Number(e.target.value))}
                     className="flex-1 accent-emerald-500"
                   />
-                  <span className="text-sm text-[#e6edf3] w-12 text-right font-mono">{maxTokens}</span>
+                  <span className="text-sm text-[var(--text)] w-12 text-right font-mono">{maxTokens}</span>
                 </div>
-                <p className="text-xs text-[#484f58] mt-1">Maximum response length in tokens</p>
+                <p className="text-xs text-[var(--text-muted)] mt-1">Maximum response length in tokens</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#e6edf3] mb-1.5">Temperature</label>
+                <label className="block text-sm font-medium text-[var(--text)] mb-1.5">Temperature</label>
                 <div className="flex items-center gap-3">
                   <input
                     type="range"
@@ -212,9 +212,9 @@ export default function AIConfig() {
                     onChange={e => setTemperature(Number(e.target.value))}
                     className="flex-1 accent-emerald-500"
                   />
-                  <span className="text-sm text-[#e6edf3] w-12 text-right font-mono">{temperature}</span>
+                  <span className="text-sm text-[var(--text)] w-12 text-right font-mono">{temperature}</span>
                 </div>
-                <p className="text-xs text-[#484f58] mt-1">0 = deterministic, 2 = creative</p>
+                <p className="text-xs text-[var(--text-muted)] mt-1">0 = deterministic, 2 = creative</p>
               </div>
 
               <Button size="sm" onClick={() => configMutation.mutate({ maxTokens, temperature })} isLoading={configMutation.isPending}>
@@ -225,19 +225,19 @@ export default function AIConfig() {
 
           {/* Test Chat */}
           <Card>
-            <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">Test Chat</h3></CardHeader>
+            <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">Test Chat</h3></CardHeader>
             <CardContent className="space-y-3">
               {testReply && (
-                <div className="rounded-lg bg-[#0d1117] border border-[#30363d] p-3 max-h-40 overflow-y-auto">
-                  <p className="text-xs text-[#484f58] mb-1">AI Response:</p>
-                  <p className="text-sm text-[#e6edf3] whitespace-pre-wrap">{testReply}</p>
+                <div className="rounded-lg bg-[var(--bg)] border border-[var(--border)] p-3 max-h-40 overflow-y-auto">
+                  <p className="text-xs text-[var(--text-muted)] mb-1">AI Response:</p>
+                  <p className="text-sm text-[var(--text)] whitespace-pre-wrap">{testReply}</p>
                 </div>
               )}
               {providers.length > 1 && (
                 <select
                   value={testProvider}
                   onChange={e => setTestProvider(e.target.value)}
-                  className="w-full rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                 >
                   <option value="">Default provider</option>
                   {providers.map(p => <option key={p} value={p}>{p}</option>)}
@@ -248,7 +248,7 @@ export default function AIConfig() {
                   placeholder="Type a test message..."
                   value={testMsg}
                   onChange={e => setTestMsg(e.target.value)}
-                  className="flex-1 rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] placeholder-[#484f58] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                  className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                 />
                 <Button type="submit" isLoading={testMutation.isPending} disabled={!testMsg.trim() || !data?.enabled}>
                   <Send className="h-4 w-4" />
@@ -261,7 +261,7 @@ export default function AIConfig() {
 
         {/* System Prompt */}
         <Card>
-          <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">System Prompt</h3></CardHeader>
+          <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">System Prompt</h3></CardHeader>
           <CardContent>
             <Textarea
               placeholder="You are a helpful WhatsApp assistant. Be concise and friendly..."
@@ -270,7 +270,7 @@ export default function AIConfig() {
               className="min-h-[140px] font-mono text-xs"
             />
             <div className="flex items-center justify-between mt-3">
-              <p className="text-xs text-[#484f58]">This prompt is prepended to every AI conversation</p>
+              <p className="text-xs text-[var(--text-muted)]">This prompt is prepended to every AI conversation</p>
               <Button size="sm" onClick={() => promptMutation.mutate(prompt)} isLoading={promptMutation.isPending} disabled={prompt === data?.systemPrompt}>
                 Save Prompt
               </Button>
@@ -284,7 +284,7 @@ export default function AIConfig() {
         <form onSubmit={e => { e.preventDefault(); addProviderMutation.mutate(providerForm); }} className="space-y-4">
           {/* Provider Type */}
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-[#e6edf3]">Provider Type</label>
+            <label className="block text-sm font-medium text-[var(--text)]">Provider Type</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {PROVIDER_PRESETS.map(p => (
                 <button
@@ -294,7 +294,7 @@ export default function AIConfig() {
                   className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors text-left ${
                     providerForm.type === p.type
                       ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
-                      : 'border-[#30363d] bg-[#0d1117] text-[#8b949e] hover:border-[#484f58]'
+                      : 'border-[var(--border)] bg-[var(--bg)] text-[var(--text-sec)] hover:border-[var(--border-hover)]'
                   }`}
                 >
                   {p.label}
@@ -320,14 +320,14 @@ export default function AIConfig() {
 
           {/* Model */}
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-[#e6edf3]">Model</label>
+            <label className="block text-sm font-medium text-[var(--text)]">Model</label>
             <div className="flex gap-2">
               <select
                 value={selectedPreset?.models.includes(providerForm.model) ? providerForm.model : '__custom'}
                 onChange={e => {
                   if (e.target.value !== '__custom') setProviderForm(f => ({ ...f, model: e.target.value }));
                 }}
-                className="flex-1 rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
               >
                 {selectedPreset?.models.map(m => <option key={m} value={m}>{m}</option>)}
                 {!selectedPreset?.models.includes(providerForm.model) && providerForm.model && (
@@ -338,7 +338,7 @@ export default function AIConfig() {
                 placeholder="or type custom model"
                 value={providerForm.model}
                 onChange={e => setProviderForm(f => ({ ...f, model: e.target.value }))}
-                className="w-48 rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] placeholder-[#484f58] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                className="w-48 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
               />
             </div>
           </div>

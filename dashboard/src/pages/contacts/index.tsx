@@ -112,37 +112,37 @@ export default function Contacts() {
 
       <div className="flex gap-3 mb-4">
         <div className="flex-1"><SearchInput value={search} onChange={setSearch} placeholder="Search by name, phone..." /></div>
-        <select value={filterTag} onChange={e => setFilterTag(e.target.value)} className="rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+        <select value={filterTag} onChange={e => setFilterTag(e.target.value)} className="rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
           <option value="">All Tags</option>
           {tags.map(t => <option key={t.id} value={t.id}>{t.name} ({t.contact_count ?? 0})</option>)}
         </select>
         {selectedIds.size > 0 && <Button variant="danger" size="sm" onClick={bulkDelete}><Trash2 className="h-3.5 w-3.5" /> Delete ({selectedIds.size})</Button>}
       </div>
 
-      {isLoading ? <Card><div className="p-8 text-center text-[#484f58] text-sm">Loading...</div></Card>
+      {isLoading ? <Card><div className="p-8 text-center text-[var(--text-muted)] text-sm">Loading...</div></Card>
       : contacts.length === 0 ? <EmptyState icon={Users} title={search ? 'No matches' : 'No contacts'} description={search ? 'Try different search.' : 'Add contacts to manage your audience.'} action={!search ? { label: 'Add Contact', onClick: openCreate } : undefined} />
       : (
         <Card>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead><tr className="border-b border-[#30363d]">
-                <th className="w-10 px-3 py-3"><input type="checkbox" onChange={e => setSelectedIds(e.target.checked ? new Set(contacts.map(c => c.id)) : new Set())} checked={selectedIds.size === contacts.length && contacts.length > 0} className="rounded border-[#30363d] bg-[#0d1117] accent-emerald-500" /></th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Name</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Phone</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Email</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Tags</th>
+              <thead><tr className="border-b border-[var(--border)]">
+                <th className="w-10 px-3 py-3"><input type="checkbox" onChange={e => setSelectedIds(e.target.checked ? new Set(contacts.map(c => c.id)) : new Set())} checked={selectedIds.size === contacts.length && contacts.length > 0} className="rounded border-[var(--border)] bg-[var(--bg)] accent-emerald-500" /></th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Name</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Phone</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Tags</th>
                 <th className="w-20"></th>
               </tr></thead>
               <tbody>{contacts.map(c => (
-                <tr key={c.id} className="border-b border-[#21262d] hover:bg-[#21262d] transition-colors">
-                  <td className="px-3 py-3"><input type="checkbox" checked={selectedIds.has(c.id)} onChange={() => toggleSelect(c.id)} className="rounded border-[#30363d] bg-[#0d1117] accent-emerald-500" /></td>
-                  <td className="px-4 py-3 text-sm font-medium text-[#e6edf3]">{c.name || '—'}</td>
-                  <td className="px-4 py-3 text-sm text-[#8b949e] font-mono">{c.phone}</td>
-                  <td className="px-4 py-3 text-sm text-[#8b949e]">{c.email || '—'}</td>
+                <tr key={c.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-hover)] transition-colors">
+                  <td className="px-3 py-3"><input type="checkbox" checked={selectedIds.has(c.id)} onChange={() => toggleSelect(c.id)} className="rounded border-[var(--border)] bg-[var(--bg)] accent-emerald-500" /></td>
+                  <td className="px-4 py-3 text-sm font-medium text-[var(--text)]">{c.name || '—'}</td>
+                  <td className="px-4 py-3 text-sm text-[var(--text-sec)] font-mono">{c.phone}</td>
+                  <td className="px-4 py-3 text-sm text-[var(--text-sec)]">{c.email || '—'}</td>
                   <td className="px-4 py-3"><div className="flex gap-1 flex-wrap">{c.tags.map(t => <Badge key={t} variant="info">{t}</Badge>)}</div></td>
                   <td className="px-3 py-3"><div className="flex gap-1">
-                    <button onClick={() => openEdit(c)} className="p-1.5 rounded-lg text-[#484f58] hover:text-blue-400 hover:bg-blue-500/10 transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
-                    <button onClick={() => { if (confirm('Delete?')) deleteMutation.mutate(c.id); }} className="p-1.5 rounded-lg text-[#484f58] hover:text-red-400 hover:bg-red-500/10 transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => openEdit(c)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-blue-400 hover:bg-blue-500/10 transition-colors"><Pencil className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => { if (confirm('Delete?')) deleteMutation.mutate(c.id); }} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
                   </div></td>
                 </tr>
               ))}</tbody>
@@ -168,9 +168,9 @@ export default function Contacts() {
       {/* Import Modal */}
       <Modal open={showImport} onClose={() => setShowImport(false)} title="Import Contacts">
         <div className="space-y-4">
-          <p className="text-sm text-[#8b949e]">Paste contacts, one per line: <code className="text-emerald-400">phone,name</code></p>
+          <p className="text-sm text-[var(--text-sec)]">Paste contacts, one per line: <code className="text-emerald-400">phone,name</code></p>
           <Textarea placeholder={"8801XXXXXXXXX,John Doe\n8801YYYYYYYYY,Jane Smith"} value={importText} onChange={e => setImportText(e.target.value)} className="min-h-[150px] font-mono text-xs" />
-          <p className="text-xs text-[#484f58]">{importText.split('\n').filter(l => l.trim()).length} contacts</p>
+          <p className="text-xs text-[var(--text-muted)]">{importText.split('\n').filter(l => l.trim()).length} contacts</p>
           <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setShowImport(false)}>Cancel</Button>
             <Button onClick={handleImport} isLoading={importMutation.isPending} disabled={!importText.trim()}><Upload className="h-4 w-4" /> Import</Button>
@@ -185,10 +185,10 @@ export default function Contacts() {
             <Input placeholder="New tag name" value={newTagName} onChange={e => setNewTagName(e.target.value)} className="flex-1" />
             <Button type="submit" isLoading={createTagMutation.isPending} disabled={!newTagName.trim()}>Add</Button>
           </form>
-          {tags.length === 0 ? <p className="text-sm text-[#484f58] text-center py-4">No tags yet</p> : tags.map(t => (
-            <div key={t.id} className="flex items-center justify-between rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2">
-              <div className="flex items-center gap-2"><Badge variant="info">{t.name}</Badge><span className="text-xs text-[#484f58]">{t.contact_count ?? 0} contacts</span></div>
-              <button onClick={() => { if (confirm(`Delete "${t.name}"?`)) deleteTagMutation.mutate(t.id); }} className="p-1 rounded text-[#484f58] hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
+          {tags.length === 0 ? <p className="text-sm text-[var(--text-muted)] text-center py-4">No tags yet</p> : tags.map(t => (
+            <div key={t.id} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2">
+              <div className="flex items-center gap-2"><Badge variant="info">{t.name}</Badge><span className="text-xs text-[var(--text-muted)]">{t.contact_count ?? 0} contacts</span></div>
+              <button onClick={() => { if (confirm(`Delete "${t.name}"?`)) deleteTagMutation.mutate(t.id); }} className="p-1 rounded text-[var(--text-muted)] hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
             </div>
           ))}
         </div>

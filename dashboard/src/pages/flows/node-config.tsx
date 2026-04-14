@@ -16,10 +16,10 @@ export function NodeConfigPanel({ node, onChange, onClose, onDelete }: NodeConfi
   };
 
   return (
-    <div className="w-80 border-l border-[#30363d] bg-[#161b22] h-full overflow-y-auto">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#30363d]">
-        <h3 className="text-sm font-bold text-[#e6edf3]">Configure Node</h3>
-        <button onClick={onClose} className="p-1 rounded-lg text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#21262d]"><X className="h-4 w-4" /></button>
+    <div className="w-80 border-l border-[var(--border)] bg-[var(--bg-raised)] h-full overflow-y-auto">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
+        <h3 className="text-sm font-bold text-[var(--text)]">Configure Node</h3>
+        <button onClick={onClose} className="p-1 rounded-lg text-[var(--text-sec)] hover:text-[var(--text)] hover:bg-[var(--bg-hover)]"><X className="h-4 w-4" /></button>
       </div>
 
       <div className="p-4 space-y-4">
@@ -29,8 +29,8 @@ export function NodeConfigPanel({ node, onChange, onClose, onDelete }: NodeConfi
         {node.type === 'trigger' && (
           <>
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-[#e6edf3]">Trigger Type</label>
-              <select value={node.data.triggerType || 'message'} onChange={e => update('triggerType', e.target.value)} className="w-full rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+              <label className="block text-sm font-medium text-[var(--text)]">Trigger Type</label>
+              <select value={node.data.triggerType || 'message'} onChange={e => update('triggerType', e.target.value)} className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
                 <option value="message">Any Message</option>
                 <option value="keyword">Contains Keyword</option>
                 <option value="exact">Exact Match</option>
@@ -75,8 +75,8 @@ export function NodeConfigPanel({ node, onChange, onClose, onDelete }: NodeConfi
           <>
             <Input label="Field" value={node.data.field || '{{message}}'} onChange={e => update('field', e.target.value)} placeholder="{{message}}" />
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-[#e6edf3]">Operator</label>
-              <select value={node.data.operator || 'contains'} onChange={e => update('operator', e.target.value)} className="w-full rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+              <label className="block text-sm font-medium text-[var(--text)]">Operator</label>
+              <select value={node.data.operator || 'contains'} onChange={e => update('operator', e.target.value)} className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
                 <option value="contains">Contains</option>
                 <option value="not_contains">Not Contains</option>
                 <option value="equals">Equals</option>
@@ -114,8 +114,8 @@ export function NodeConfigPanel({ node, onChange, onClose, onDelete }: NodeConfi
         {node.type === 'http_request' && (
           <>
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-[#e6edf3]">Method</label>
-              <select value={node.data.method || 'GET'} onChange={e => update('method', e.target.value)} className="w-full rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+              <label className="block text-sm font-medium text-[var(--text)]">Method</label>
+              <select value={node.data.method || 'GET'} onChange={e => update('method', e.target.value)} className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
                 <option value="GET">GET</option>
                 <option value="POST">POST</option>
                 <option value="PUT">PUT</option>
@@ -128,11 +128,11 @@ export function NodeConfigPanel({ node, onChange, onClose, onDelete }: NodeConfi
         )}
 
         {/* Variables hint */}
-        <div className="rounded-lg bg-[#0d1117] border border-[#30363d] p-3">
-          <p className="text-[10px] font-semibold text-[#484f58] uppercase tracking-wider mb-1">Available Variables</p>
+        <div className="rounded-lg bg-[var(--bg)] border border-[var(--border)] p-3">
+          <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">Available Variables</p>
           <div className="flex flex-wrap gap-1">
             {['{{message}}', '{{sender}}', '{{sender_number}}', '{{timestamp}}', '{{ai_reply}}', '{{http_response}}'].map(v => (
-              <span key={v} className="px-1.5 py-0.5 rounded bg-[#21262d] text-[10px] text-[#8b949e] font-mono">{v}</span>
+              <span key={v} className="px-1.5 py-0.5 rounded bg-[var(--bg-hover)] text-[10px] text-[var(--text-sec)] font-mono">{v}</span>
             ))}
           </div>
         </div>

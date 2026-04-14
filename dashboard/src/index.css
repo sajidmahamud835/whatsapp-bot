@@ -1,19 +1,74 @@
 @import "tailwindcss";
 
-/* Custom scrollbar */
+/* ─── Theme Variables ─────────────────────────────────────────────────────── */
+
+:root, [data-theme="dark"] {
+  --bg:          #0d1117;
+  --bg-raised:   #161b22;
+  --bg-overlay:  #1c2128;
+  --bg-hover:    #21262d;
+  --border:      #30363d;
+  --border-hover:#484f58;
+  --text:        #e6edf3;
+  --text-sec:    #8b949e;
+  --text-muted:  #484f58;
+  --brand:       #25d366;
+  --brand-hover: #1da851;
+  --brand-bg:    rgba(37, 211, 102, 0.1);
+  --danger:      #f85149;
+  --warning:     #d29922;
+  --info:        #58a6ff;
+  --success:     #3fb950;
+}
+
+[data-theme="light"] {
+  --bg:          #ffffff;
+  --bg-raised:   #f6f8fa;
+  --bg-overlay:  #ffffff;
+  --bg-hover:    #f0f1f3;
+  --border:      #d1d9e0;
+  --border-hover:#afb8c1;
+  --text:        #1f2328;
+  --text-sec:    #656d76;
+  --text-muted:  #8b949e;
+  --brand:       #1a7f37;
+  --brand-hover: #116329;
+  --brand-bg:    rgba(26, 127, 55, 0.08);
+  --danger:      #cf222e;
+  --warning:     #9a6700;
+  --info:        #0969da;
+  --success:     #1a7f37;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+/* ─── Global ──────────────────────────────────────────────────────────────── */
 
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: #0d1117;
-  color: #e6edf3;
+  background: var(--bg);
+  color: var(--text);
+  transition: background-color 0.2s, color 0.2s;
 }
 
 #root {
   min-height: 100vh;
 }
+
+/* ─── Theme utility classes ───────────────────────────────────────────────── */
+
+.theme-bg          { background-color: var(--bg); }
+.theme-bg-raised   { background-color: var(--bg-raised); }
+.theme-bg-overlay  { background-color: var(--bg-overlay); }
+.theme-bg-hover    { background-color: var(--bg-hover); }
+.theme-border      { border-color: var(--border); }
+.theme-text        { color: var(--text); }
+.theme-text-sec    { color: var(--text-sec); }
+.theme-text-muted  { color: var(--text-muted); }

@@ -24,7 +24,7 @@ export function Toggle({ enabled, onChange, label }: ToggleProps) {
             enabled ? 'translate-x-6' : 'translate-x-1',
           )} />
         </Switch>
-        {label && <Label className="text-sm text-[#e6edf3] cursor-pointer">{label}</Label>}
+        {label && <Label className="text-sm text-[var(--text)] cursor-pointer">{label}</Label>}
       </div>
     </Field>
   );

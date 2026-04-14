@@ -30,17 +30,17 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0d1117] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500/10 mb-4">
             <MessageSquare className="h-7 w-7 text-emerald-400" />
           </div>
-          <h1 className="text-2xl font-bold text-[#e6edf3]">WA Convo Pro</h1>
-          <p className="mt-1 text-sm text-[#8b949e]">WhatsApp Automation Dashboard</p>
+          <h1 className="text-2xl font-bold text-[var(--text)]">WA Convo Pro</h1>
+          <p className="mt-1 text-sm text-[var(--text-sec)]">WhatsApp Automation Dashboard</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="rounded-xl border border-[#30363d] bg-[#161b22] p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="rounded-xl border border-[var(--border)] bg-[var(--bg-raised)] p-6 space-y-4">
           <Input
             label="API Key"
             type="password"
@@ -54,7 +54,7 @@ export default function Login() {
           </Button>
         </form>
 
-        <p className="mt-4 text-center text-xs text-[#484f58]">
+        <p className="mt-4 text-center text-xs text-[var(--text-muted)]">
           API key is configured in your server's config.json
         </p>
       </div>

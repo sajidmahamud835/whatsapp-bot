@@ -14,9 +14,9 @@ export function StatCard({ label, value, sub, icon: Icon }: StatCardProps) {
     <Card className="p-5">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-[#8b949e]">{label}</p>
-          <p className="mt-1 text-2xl font-bold text-[#e6edf3]">{value}</p>
-          {sub && <p className="mt-0.5 text-xs text-[#484f58]">{sub}</p>}
+          <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-sec)]">{label}</p>
+          <p className="mt-1 text-2xl font-bold text-[var(--text)]">{value}</p>
+          {sub && <p className="mt-0.5 text-xs text-[var(--text-muted)]">{sub}</p>}
         </div>
         {Icon && (
           <div className="rounded-lg bg-emerald-500/10 p-2.5">

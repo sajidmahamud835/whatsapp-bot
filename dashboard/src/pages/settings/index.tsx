@@ -41,11 +41,11 @@ function ConfigRow({ label, path, value, type = 'text', description }: {
   }
 
   return (
-    <div className="flex items-center justify-between py-3 border-b border-[#21262d] last:border-0">
+    <div className="flex items-center justify-between py-3 border-b border-[var(--border)] last:border-0">
       <div className="flex-1 min-w-0 mr-4">
-        <p className="text-sm font-medium text-[#e6edf3]">{label}</p>
-        {description && <p className="text-xs text-[#484f58] mt-0.5">{description}</p>}
-        <p className="text-xs text-[#484f58] font-mono mt-0.5">{path}</p>
+        <p className="text-sm font-medium text-[var(--text)]">{label}</p>
+        {description && <p className="text-xs text-[var(--text-muted)] mt-0.5">{description}</p>}
+        <p className="text-xs text-[var(--text-muted)] font-mono mt-0.5">{path}</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         {editing ? (
@@ -54,7 +54,7 @@ function ConfigRow({ label, path, value, type = 'text', description }: {
               <select
                 value={localValue}
                 onChange={e => setLocalValue(e.target.value)}
-                className="rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-1.5 text-sm text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                className="rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-1.5 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
               >
                 <option value="true">true</option>
                 <option value="false">false</option>
@@ -64,7 +64,7 @@ function ConfigRow({ label, path, value, type = 'text', description }: {
                 type={type}
                 value={localValue}
                 onChange={e => setLocalValue(e.target.value)}
-                className="w-32 rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-1.5 text-sm text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                className="w-32 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-1.5 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                 onKeyDown={e => e.key === 'Enter' && save()}
               />
             )}
@@ -74,7 +74,7 @@ function ConfigRow({ label, path, value, type = 'text', description }: {
         ) : (
           <button
             onClick={() => setEditing(true)}
-            className="px-3 py-1.5 rounded-lg bg-[#0d1117] border border-[#30363d] text-sm text-[#e6edf3] hover:border-emerald-500/50 transition-colors font-mono"
+            className="px-3 py-1.5 rounded-lg bg-[var(--bg)] border border-[var(--border)] text-sm text-[var(--text)] hover:border-emerald-500/50 transition-colors font-mono"
           >
             {String(value) || '(empty)'}
           </button>
@@ -118,20 +118,20 @@ export default function SettingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* System Info */}
         <Card>
-          <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">System Info</h3></CardHeader>
+          <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">System Info</h3></CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-[#8b949e]">Version</span><Badge variant="info">v4.2.0</Badge></div>
-            <div className="flex justify-between"><span className="text-[#8b949e]">Uptime</span><span className="text-[#e6edf3]">{stats?.uptimeFormatted ?? '—'}</span></div>
-            <div className="flex justify-between"><span className="text-[#8b949e]">Memory (heap)</span><span className="text-[#e6edf3]">{formatBytes(stats?.memory.heapUsed ?? 0)} / {formatBytes(stats?.memory.heapTotal ?? 0)}</span></div>
-            <div className="flex justify-between"><span className="text-[#8b949e]">Memory (RSS)</span><span className="text-[#e6edf3]">{formatBytes(stats?.memory.rss ?? 0)}</span></div>
-            <div className="flex justify-between"><span className="text-[#8b949e]">Clients</span><span className="text-[#e6edf3]">{stats?.clients.ready ?? 0}/{stats?.clients.total ?? 0} ready</span></div>
-            <div className="flex justify-between"><span className="text-[#8b949e]">Messages</span><span className="text-[#e6edf3]">{stats?.messages.totalStored?.toLocaleString() ?? 0}</span></div>
+            <div className="flex justify-between"><span className="text-[var(--text-sec)]">Version</span><Badge variant="info">v4.2.0</Badge></div>
+            <div className="flex justify-between"><span className="text-[var(--text-sec)]">Uptime</span><span className="text-[var(--text)]">{stats?.uptimeFormatted ?? '—'}</span></div>
+            <div className="flex justify-between"><span className="text-[var(--text-sec)]">Memory (heap)</span><span className="text-[var(--text)]">{formatBytes(stats?.memory.heapUsed ?? 0)} / {formatBytes(stats?.memory.heapTotal ?? 0)}</span></div>
+            <div className="flex justify-between"><span className="text-[var(--text-sec)]">Memory (RSS)</span><span className="text-[var(--text)]">{formatBytes(stats?.memory.rss ?? 0)}</span></div>
+            <div className="flex justify-between"><span className="text-[var(--text-sec)]">Clients</span><span className="text-[var(--text)]">{stats?.clients.ready ?? 0}/{stats?.clients.total ?? 0} ready</span></div>
+            <div className="flex justify-between"><span className="text-[var(--text-sec)]">Messages</span><span className="text-[var(--text)]">{stats?.messages.totalStored?.toLocaleString() ?? 0}</span></div>
           </CardContent>
         </Card>
 
         {/* Server Settings */}
         <Card>
-          <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">Server</h3></CardHeader>
+          <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">Server</h3></CardHeader>
           <CardContent>
             <ConfigRow label="Port" path="server.port" value={cfg?.server?.port ?? 3000} type="number" description="API server port" />
             <ConfigRow label="Host" path="server.host" value={cfg?.server?.host ?? '127.0.0.1'} description="Bind address" />
@@ -142,7 +142,7 @@ export default function SettingsPage() {
 
         {/* Logging */}
         <Card>
-          <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">Logging</h3></CardHeader>
+          <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">Logging</h3></CardHeader>
           <CardContent>
             <ConfigRow label="Log Level" path="logging.level" value={cfg?.logging?.level ?? 'info'} description="trace, debug, info, warn, error" />
             <ConfigRow label="Console Output" path="logging.console" value={cfg?.logging?.console ?? true} type="boolean" />
@@ -154,7 +154,7 @@ export default function SettingsPage() {
 
         {/* Database */}
         <Card>
-          <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">Database</h3></CardHeader>
+          <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">Database</h3></CardHeader>
           <CardContent>
             <ConfigRow label="DB Path" path="database.path" value={cfg?.database?.path ?? './data/wa-convo.db'} description="SQLite file location" />
             <ConfigRow label="Retention Days" path="database.retentionDays" value={cfg?.database?.retentionDays ?? 30} type="number" description="Auto-delete records older than N days" />
@@ -163,7 +163,7 @@ export default function SettingsPage() {
 
         {/* Deployment */}
         <Card>
-          <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">Deployment</h3></CardHeader>
+          <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">Deployment</h3></CardHeader>
           <CardContent>
             <ConfigRow label="Mode" path="deployment.mode" value={cfg?.deployment?.mode ?? 'local'} description="local, vps, or cloud" />
             <ConfigRow label="Public URL" path="deployment.publicUrl" value={cfg?.deployment?.publicUrl ?? ''} description="Public-facing URL for webhooks" />
@@ -173,7 +173,7 @@ export default function SettingsPage() {
 
         {/* Dashboard */}
         <Card>
-          <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">Dashboard</h3></CardHeader>
+          <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">Dashboard</h3></CardHeader>
           <CardContent>
             <ConfigRow label="Dashboard Enabled" path="dashboard.enabled" value={cfg?.dashboard?.enabled ?? false} type="boolean" />
             <ConfigRow label="Dashboard Port" path="dashboard.port" value={cfg?.dashboard?.port ?? 3001} type="number" />

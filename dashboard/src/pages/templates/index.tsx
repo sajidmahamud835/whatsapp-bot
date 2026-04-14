@@ -124,7 +124,7 @@ export default function Templates() {
         <select
           value={filterCat}
           onChange={e => setFilterCat(e.target.value)}
-          className="rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+          className="rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
         >
           <option value="">All Categories</option>
           {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
@@ -132,22 +132,22 @@ export default function Templates() {
       </div>
 
       {isLoading ? (
-        <Card><CardContent><p className="text-[#484f58] text-sm py-8 text-center">Loading...</p></CardContent></Card>
+        <Card><CardContent><p className="text-[var(--text-muted)] text-sm py-8 text-center">Loading...</p></CardContent></Card>
       ) : filtered.length === 0 ? (
         <EmptyState icon={FileText} title={search || filterCat ? 'No matches' : 'No templates'} description={search || filterCat ? 'Try different filters.' : 'Create quick reply templates to speed up responses.'} action={!search && !filterCat ? { label: 'Create Template', onClick: openCreate } : undefined} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(t => (
-            <Card key={t.id} className="group hover:border-[#484f58] transition-colors">
+            <Card key={t.id} className="group hover:border-[var(--border-hover)] transition-colors">
               <CardContent className="space-y-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-[#e6edf3] truncate">{t.name}</h3>
+                    <h3 className="font-semibold text-[var(--text)] truncate">{t.name}</h3>
                     <Badge variant="info" className="mt-1">{t.category}</Badge>
                   </div>
                 </div>
 
-                <p className="text-sm text-[#8b949e] whitespace-pre-wrap line-clamp-3">{t.body}</p>
+                <p className="text-sm text-[var(--text-sec)] whitespace-pre-wrap line-clamp-3">{t.body}</p>
 
                 {t.variables.length > 0 && (
                   <div className="flex gap-1 flex-wrap">
@@ -156,20 +156,20 @@ export default function Templates() {
                 )}
 
                 {/* Action buttons */}
-                <div className="flex gap-1 pt-1 border-t border-[#21262d]">
-                  <button onClick={() => openEdit(t)} className="p-1.5 rounded-lg text-[#484f58] hover:text-blue-400 hover:bg-blue-500/10 transition-colors" title="Edit">
+                <div className="flex gap-1 pt-1 border-t border-[var(--border)]">
+                  <button onClick={() => openEdit(t)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-blue-400 hover:bg-blue-500/10 transition-colors" title="Edit">
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
-                  <button onClick={() => openPreview(t)} className="p-1.5 rounded-lg text-[#484f58] hover:text-purple-400 hover:bg-purple-500/10 transition-colors" title="Preview">
+                  <button onClick={() => openPreview(t)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-purple-400 hover:bg-purple-500/10 transition-colors" title="Preview">
                     <Eye className="h-3.5 w-3.5" />
                   </button>
-                  <button onClick={() => openSend(t)} className="p-1.5 rounded-lg text-[#484f58] hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors" title="Send">
+                  <button onClick={() => openSend(t)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors" title="Send">
                     <Send className="h-3.5 w-3.5" />
                   </button>
-                  <button onClick={() => { saveMutation.mutate({ ...t, name: `${t.name} (copy)` }); }} className="p-1.5 rounded-lg text-[#484f58] hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors" title="Duplicate">
+                  <button onClick={() => { saveMutation.mutate({ ...t, name: `${t.name} (copy)` }); }} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors" title="Duplicate">
                     <Copy className="h-3.5 w-3.5" />
                   </button>
-                  <button onClick={() => { if (confirm('Delete this template?')) deleteMutation.mutate(t.id); }} className="p-1.5 rounded-lg text-[#484f58] hover:text-red-400 hover:bg-red-500/10 transition-colors ml-auto" title="Delete">
+                  <button onClick={() => { if (confirm('Delete this template?')) deleteMutation.mutate(t.id); }} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors ml-auto" title="Delete">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -184,8 +184,8 @@ export default function Templates() {
         <form onSubmit={e => { e.preventDefault(); saveMutation.mutate(form); }} className="space-y-4">
           <Input label="Name" placeholder="Template name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-[#e6edf3]">Category</label>
-            <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+            <label className="block text-sm font-medium text-[var(--text)]">Category</label>
+            <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
               {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
             </select>
           </div>
@@ -193,13 +193,13 @@ export default function Templates() {
 
           {/* Live preview */}
           {form.body && (
-            <div className="rounded-lg bg-[#0d1117] border border-[#30363d] p-3">
-              <p className="text-[10px] font-semibold text-[#484f58] uppercase tracking-wider mb-1">Preview</p>
-              <p className="text-sm text-[#e6edf3] whitespace-pre-wrap">{form.body.replace(/\{\{(\w+)\}\}/g, (_, k: string) => `[${k}]`)}</p>
+            <div className="rounded-lg bg-[var(--bg)] border border-[var(--border)] p-3">
+              <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">Preview</p>
+              <p className="text-sm text-[var(--text)] whitespace-pre-wrap">{form.body.replace(/\{\{(\w+)\}\}/g, (_, k: string) => `[${k}]`)}</p>
             </div>
           )}
 
-          <p className="text-xs text-[#484f58]">Use {'{{variable}}'} for dynamic content like {'{{name}}'}, {'{{date}}'}, {'{{order_id}}'}</p>
+          <p className="text-xs text-[var(--text-muted)]">Use {'{{variable}}'} for dynamic content like {'{{name}}'}, {'{{date}}'}, {'{{order_id}}'}</p>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="secondary" type="button" onClick={closeModal}>Cancel</Button>
             <Button type="submit" isLoading={saveMutation.isPending} disabled={!form.name || !form.body}>
@@ -218,7 +218,7 @@ export default function Templates() {
 
             {showSend.variables.length > 0 && (
               <div className="space-y-3">
-                <p className="text-sm font-medium text-[#e6edf3]">Variables</p>
+                <p className="text-sm font-medium text-[var(--text)]">Variables</p>
                 {showSend.variables.map(v => (
                   <Input key={v} label={`{{${v}}}`} placeholder={`Value for ${v}`} value={sendForm.variables[v] || ''} onChange={e => setSendForm({ ...sendForm, variables: { ...sendForm.variables, [v]: e.target.value } })} />
                 ))}
@@ -226,9 +226,9 @@ export default function Templates() {
             )}
 
             {/* Message preview */}
-            <div className="rounded-lg bg-[#0d1117] border border-[#30363d] p-3">
-              <p className="text-[10px] font-semibold text-[#484f58] uppercase tracking-wider mb-1">Will send</p>
-              <p className="text-sm text-[#e6edf3] whitespace-pre-wrap">{renderBody(showSend.body, sendForm.variables)}</p>
+            <div className="rounded-lg bg-[var(--bg)] border border-[var(--border)] p-3">
+              <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">Will send</p>
+              <p className="text-sm text-[var(--text)] whitespace-pre-wrap">{renderBody(showSend.body, sendForm.variables)}</p>
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
@@ -247,7 +247,7 @@ export default function Templates() {
           <div className="space-y-4">
             {showPreview.variables.length > 0 && (
               <div className="space-y-3">
-                <p className="text-sm font-medium text-[#e6edf3]">Sample Variables</p>
+                <p className="text-sm font-medium text-[var(--text)]">Sample Variables</p>
                 {showPreview.variables.map(v => (
                   <Input key={v} label={`{{${v}}}`} value={previewVars[v] || ''} onChange={e => setPreviewVars({ ...previewVars, [v]: e.target.value })} />
                 ))}
@@ -256,8 +256,8 @@ export default function Templates() {
 
             {/* Phone mockup */}
             <div className="flex justify-center">
-              <div className="w-72 rounded-2xl border-2 border-[#30363d] bg-[#0d1117] overflow-hidden">
-                <div className="bg-[#1f2937] px-4 py-2 text-xs text-[#8b949e] flex items-center gap-2">
+              <div className="w-72 rounded-2xl border-2 border-[var(--border)] bg-[var(--bg)] overflow-hidden">
+                <div className="bg-[var(--bg-hover)] px-4 py-2 text-xs text-[var(--text-sec)] flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-emerald-400" />
                   WhatsApp Preview
                 </div>

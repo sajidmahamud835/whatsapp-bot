@@ -73,12 +73,12 @@ export default function Messages() {
   return (
     <div className="flex h-[calc(100vh-5rem)] gap-4">
       {/* Left — Conversation List */}
-      <div className="w-72 flex flex-col rounded-xl border border-[#30363d] bg-[#161b22] overflow-hidden shrink-0">
-        <div className="p-3 border-b border-[#30363d]">
+      <div className="w-72 flex flex-col rounded-xl border border-[var(--border)] bg-[var(--bg-raised)] overflow-hidden shrink-0">
+        <div className="p-3 border-b border-[var(--border)]">
           <select
             value={selectedClient}
             onChange={e => { setSelectedClient(e.target.value); setSelectedJid(null); }}
-            className="w-full rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
           >
             {readyClients.length > 0
               ? readyClients.map(c => <option key={c.id} value={c.id}>Client {c.id} — {c.name || c.phone}</option>)
@@ -87,41 +87,41 @@ export default function Messages() {
           </select>
         </div>
 
-        <div className="p-3 border-b border-[#30363d]">
+        <div className="p-3 border-b border-[var(--border)]">
           <SearchInput value={search} onChange={setSearch} placeholder="Search conversations..." />
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {filteredConvos.length === 0 ? (
-            <p className="text-[#484f58] text-xs text-center py-8">No conversations yet</p>
+            <p className="text-[var(--text-muted)] text-xs text-center py-8">No conversations yet</p>
           ) : filteredConvos.map(c => (
             <button
               key={c.jid}
               onClick={() => { setSelectedJid(c.jid); setNumber(formatPhone(c.jid)); }}
-              className={`w-full text-left px-4 py-3 border-b border-[#21262d] transition-colors hover:bg-[#21262d] ${
-                selectedJid === c.jid ? 'bg-[#1f2937]' : ''
+              className={`w-full text-left px-4 py-3 border-b border-[var(--border)] transition-colors hover:bg-[var(--bg-hover)] ${
+                selectedJid === c.jid ? 'bg-[var(--bg-hover)]' : ''
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-[#e6edf3] truncate">{formatPhone(c.jid)}</span>
-                <span className="text-[10px] text-[#484f58] shrink-0 ml-2">{formatTime(c.last_timestamp)}</span>
+                <span className="text-sm font-medium text-[var(--text)] truncate">{formatPhone(c.jid)}</span>
+                <span className="text-[10px] text-[var(--text-muted)] shrink-0 ml-2">{formatTime(c.last_timestamp)}</span>
               </div>
-              <p className="text-xs text-[#8b949e] mt-0.5 truncate">{c.last_message || '(media)'}</p>
+              <p className="text-xs text-[var(--text-sec)] mt-0.5 truncate">{c.last_message || '(media)'}</p>
             </button>
           ))}
         </div>
       </div>
 
       {/* Right — Chat View */}
-      <div className="flex-1 flex flex-col rounded-xl border border-[#30363d] bg-[#161b22] overflow-hidden">
-        <div className="flex items-center gap-3 px-5 py-3.5 border-b border-[#30363d]">
+      <div className="flex-1 flex flex-col rounded-xl border border-[var(--border)] bg-[var(--bg-raised)] overflow-hidden">
+        <div className="flex items-center gap-3 px-5 py-3.5 border-b border-[var(--border)]">
           {selectedJid ? (
             <>
               <StatusDot status="online" />
-              <span className="font-semibold text-[#e6edf3]">{formatPhone(selectedJid)}</span>
+              <span className="font-semibold text-[var(--text)]">{formatPhone(selectedJid)}</span>
             </>
           ) : (
-            <span className="text-sm text-[#8b949e]">Select a conversation or compose a new message</span>
+            <span className="text-sm text-[var(--text-sec)]">Select a conversation or compose a new message</span>
           )}
         </div>
 
@@ -134,10 +134,10 @@ export default function Messages() {
                     <div className={`max-w-[65%] rounded-2xl px-4 py-2 ${
                       m.from_me
                         ? 'bg-emerald-600 text-white rounded-br-sm'
-                        : 'bg-[#30363d] text-[#e6edf3] rounded-bl-sm'
+                        : 'bg-[#30363d] text-[var(--text)] rounded-bl-sm'
                     }`}>
                       <p className="text-sm break-words">{m.body || `[${m.type}]`}</p>
-                      <p className={`text-[10px] mt-1 ${m.from_me ? 'text-emerald-200' : 'text-[#484f58]'}`}>
+                      <p className={`text-[10px] mt-1 ${m.from_me ? 'text-emerald-200' : 'text-[var(--text-muted)]'}`}>
                         {formatTime(m.timestamp)}
                       </p>
                     </div>
@@ -153,20 +153,20 @@ export default function Messages() {
           )}
         </div>
 
-        <form onSubmit={handleSend} className="flex items-center gap-3 px-4 py-3 border-t border-[#30363d]">
+        <form onSubmit={handleSend} className="flex items-center gap-3 px-4 py-3 border-t border-[var(--border)]">
           <input
             type="text"
             placeholder="Phone number"
             value={number}
             onChange={e => setNumber(e.target.value)}
-            className="w-36 shrink-0 rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] placeholder-[#484f58] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="w-36 shrink-0 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
           />
           <input
             type="text"
             placeholder="Type a message..."
             value={message}
             onChange={e => setMessage(e.target.value)}
-            className="flex-1 rounded-lg border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-[#e6edf3] placeholder-[#484f58] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
           />
           <Button type="submit" size="md" isLoading={sendMutation.isPending} disabled={!message.trim()}>
             <Send className="h-4 w-4" />

@@ -52,22 +52,22 @@ export default function Webhooks() {
         <Card>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead><tr className="border-b border-[#30363d]">
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">URL</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Events</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#8b949e]">Status</th>
+              <thead><tr className="border-b border-[var(--border)]">
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">URL</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Events</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-sec)]">Status</th>
                 <th className="w-24"></th>
               </tr></thead>
               <tbody>
                 {webhooks.map(w => (
-                  <tr key={w.id} className="border-b border-[#21262d] hover:bg-[#21262d] transition-colors">
-                    <td className="px-5 py-3 text-sm text-[#e6edf3] font-mono truncate max-w-xs">{w.url}</td>
+                  <tr key={w.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-hover)] transition-colors">
+                    <td className="px-5 py-3 text-sm text-[var(--text)] font-mono truncate max-w-xs">{w.url}</td>
                     <td className="px-5 py-3"><div className="flex gap-1 flex-wrap">{w.events.map(e => <Badge key={e} variant="info">{e}</Badge>)}</div></td>
                     <td className="px-5 py-3"><Badge variant={w.enabled ? 'success' : 'neutral'}>{w.enabled ? 'Active' : 'Disabled'}</Badge></td>
                     <td className="px-3 py-3">
                       <div className="flex gap-1">
-                        <button onClick={() => testMutation.mutate(w.id)} className="p-1.5 rounded-lg text-[#484f58] hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors" title="Test"><Zap className="h-4 w-4" /></button>
-                        <button onClick={() => deleteMutation.mutate(w.id)} className="p-1.5 rounded-lg text-[#484f58] hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete"><Trash2 className="h-4 w-4" /></button>
+                        <button onClick={() => testMutation.mutate(w.id)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors" title="Test"><Zap className="h-4 w-4" /></button>
+                        <button onClick={() => deleteMutation.mutate(w.id)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete"><Trash2 className="h-4 w-4" /></button>
                       </div>
                     </td>
                   </tr>

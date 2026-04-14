@@ -66,7 +66,7 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
-          <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">Message Volume (7 days)</h3></CardHeader>
+          <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">Message Volume (7 days)</h3></CardHeader>
           <CardContent>
             {chartData?.data?.length ? (
               <ResponsiveContainer width="100%" height={220}>
@@ -83,20 +83,20 @@ export default function Dashboard() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-sm text-[#484f58] text-center py-12">No message data yet</p>
+              <p className="text-sm text-[var(--text-muted)] text-center py-12">No message data yet</p>
             )}
           </CardContent>
         </Card>
 
         <div className="space-y-4">
           <Card>
-            <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">Clients</h3></CardHeader>
+            <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">Clients</h3></CardHeader>
             <CardContent className="space-y-2">
               {(clients || []).map(c => (
                 <div key={c.id} className="flex items-center justify-between py-1">
                   <div className="flex items-center gap-2">
                     <StatusDot status={c.isReady ? 'online' : c.isInitialized ? 'connecting' : 'offline'} />
-                    <span className="text-sm text-[#e6edf3]">Client {c.id}</span>
+                    <span className="text-sm text-[var(--text)]">Client {c.id}</span>
                   </div>
                   <Badge variant={c.isReady ? 'success' : 'neutral'}>{c.isReady ? c.name || c.phone || 'Ready' : 'Offline'}</Badge>
                 </div>
@@ -105,12 +105,12 @@ export default function Dashboard() {
           </Card>
 
           <Card>
-            <CardHeader><h3 className="text-sm font-semibold text-[#e6edf3]">System</h3></CardHeader>
+            <CardHeader><h3 className="text-sm font-semibold text-[var(--text)]">System</h3></CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-[#8b949e]">Uptime</span><span className="text-[#e6edf3]">{stats?.uptimeFormatted}</span></div>
-              <div className="flex justify-between"><span className="text-[#8b949e]">Memory</span><span className="text-[#e6edf3]">{formatBytes(stats?.memory.heapUsed ?? 0)}</span></div>
-              <div className="flex justify-between"><span className="text-[#8b949e]">Stored</span><span className="text-[#e6edf3]">{stats?.messages.totalStored?.toLocaleString()}</span></div>
-              <div className="flex justify-between"><span className="text-[#8b949e]">Cron</span><span className="text-[#e6edf3]">{stats?.cron.activeJobs}/{stats?.cron.totalJobs} active</span></div>
+              <div className="flex justify-between"><span className="text-[var(--text-sec)]">Uptime</span><span className="text-[var(--text)]">{stats?.uptimeFormatted}</span></div>
+              <div className="flex justify-between"><span className="text-[var(--text-sec)]">Memory</span><span className="text-[var(--text)]">{formatBytes(stats?.memory.heapUsed ?? 0)}</span></div>
+              <div className="flex justify-between"><span className="text-[var(--text-sec)]">Stored</span><span className="text-[var(--text)]">{stats?.messages.totalStored?.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span className="text-[var(--text-sec)]">Cron</span><span className="text-[var(--text)]">{stats?.cron.activeJobs}/{stats?.cron.totalJobs} active</span></div>
             </CardContent>
           </Card>
         </div>

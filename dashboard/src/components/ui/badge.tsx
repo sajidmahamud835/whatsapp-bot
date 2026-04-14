@@ -5,7 +5,7 @@ const variants = {
   warning: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/20',
   error: 'bg-red-500/15 text-red-400 border-red-500/20',
   info: 'bg-blue-500/15 text-blue-400 border-blue-500/20',
-  neutral: 'bg-[#30363d] text-[#8b949e] border-[#30363d]',
+  neutral: 'bg-[#30363d] text-[var(--text-sec)] border-[var(--border)]',
 };
 
 interface BadgeProps {

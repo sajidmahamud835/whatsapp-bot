@@ -128,31 +128,31 @@ export default function FlowBuilder() {
   return (
     <div className="flex h-[calc(100vh-1rem)] -m-6">
       {/* Left sidebar — Node Palette */}
-      <div className="w-56 bg-[#0d1117] border-r border-[#30363d] flex flex-col overflow-hidden">
-        <div className="px-3 py-3 border-b border-[#30363d]">
+      <div className="w-56 bg-[var(--bg)] border-r border-[var(--border)] flex flex-col overflow-hidden">
+        <div className="px-3 py-3 border-b border-[var(--border)]">
           <Button variant="ghost" size="sm" onClick={() => navigate('/flows')} className="mb-2 w-full justify-start">
             <ArrowLeft className="h-3.5 w-3.5" /> Back to Flows
           </Button>
-          <h2 className="text-sm font-bold text-[#e6edf3] truncate">{flow?.name || 'Loading...'}</h2>
+          <h2 className="text-sm font-bold text-[var(--text)] truncate">{flow?.name || 'Loading...'}</h2>
           {flow && <Badge variant={flow.enabled ? 'success' : 'neutral'} className="mt-1">{flow.enabled ? 'Active' : 'Draft'}</Badge>}
         </div>
 
         <div className="flex-1 overflow-y-auto p-2">
-          <p className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#484f58]">Drag nodes to canvas</p>
+          <p className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Drag nodes to canvas</p>
           {['Triggers', 'Actions', 'Logic', 'Data'].map(cat => (
             <div key={cat} className="mb-3">
-              <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#8b949e]">{cat}</p>
+              <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-sec)]">{cat}</p>
               {NODE_PALETTE.filter(n => n.category === cat).map(item => (
                 <div
                   key={item.type}
                   draggable
                   onDragStart={e => { e.dataTransfer.setData('application/reactflow', item.type); e.dataTransfer.setData('label', item.label); e.dataTransfer.effectAllowed = 'move'; }}
-                  className="flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-grab active:cursor-grabbing hover:bg-[#21262d] transition-colors mb-0.5"
+                  className="flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-grab active:cursor-grabbing hover:bg-[var(--bg-hover)] transition-colors mb-0.5"
                 >
                   <div className="w-1.5 h-1.5 rounded-full bg-[#484f58]" />
                   <div>
-                    <p className="text-xs font-medium text-[#e6edf3]">{item.label}</p>
-                    <p className="text-[10px] text-[#484f58]">{item.description}</p>
+                    <p className="text-xs font-medium text-[var(--text)]">{item.label}</p>
+                    <p className="text-[10px] text-[var(--text-muted)]">{item.description}</p>
                   </div>
                 </div>
               ))}
@@ -164,7 +164,7 @@ export default function FlowBuilder() {
       {/* Center — Canvas */}
       <div className="flex-1 flex flex-col">
         {/* Toolbar */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-[#30363d] bg-[#161b22]">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)] bg-[var(--bg-raised)]">
           <div className="flex items-center gap-2">
             <Button size="sm" onClick={() => saveMutation.mutate()} isLoading={saveMutation.isPending}>
               <Save className="h-3.5 w-3.5" /> Save
@@ -202,15 +202,15 @@ export default function FlowBuilder() {
             defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
             minZoom={0.2}
             maxZoom={1.5}
-            className="bg-[#0d1117]"
+            className="bg-[var(--bg)]"
             proOptions={{ hideAttribution: true }}
           >
             <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="#21262d" />
-            <Controls className="!bg-[#161b22] !border-[#30363d] !rounded-lg [&>button]:!bg-[#161b22] [&>button]:!border-[#30363d] [&>button]:!text-[#8b949e] [&>button:hover]:!bg-[#21262d]" />
+            <Controls className="!bg-[var(--bg-raised)] !border-[var(--border)] !rounded-lg [&>button]:!bg-[var(--bg-raised)] [&>button]:!border-[var(--border)] [&>button]:!text-[var(--text-sec)] [&>button:hover]:!bg-[var(--bg-hover)]" />
             <MiniMap
               nodeColor="#30363d"
               maskColor="rgba(13, 17, 23, 0.8)"
-              className="!bg-[#161b22] !border-[#30363d] !rounded-lg"
+              className="!bg-[var(--bg-raised)] !border-[var(--border)] !rounded-lg"
             />
           </ReactFlow>
         </div>

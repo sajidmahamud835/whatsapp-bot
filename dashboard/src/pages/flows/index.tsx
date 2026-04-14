@@ -81,35 +81,35 @@ export default function Flows() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {flows.map(f => (
-            <Card key={f.id} className="hover:border-[#484f58] transition-colors cursor-pointer group" onClick={() => navigate(`/flows/${f.id}`)}>
+            <Card key={f.id} className="hover:border-[var(--border-hover)] transition-colors cursor-pointer group" onClick={() => navigate(`/flows/${f.id}`)}>
               <CardContent className="space-y-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-[#e6edf3] truncate">{f.name}</h3>
-                    {f.description && <p className="text-xs text-[#484f58] mt-0.5 truncate">{f.description}</p>}
+                    <h3 className="font-semibold text-[var(--text)] truncate">{f.name}</h3>
+                    {f.description && <p className="text-xs text-[var(--text-muted)] mt-0.5 truncate">{f.description}</p>}
                   </div>
                   <Badge variant={f.enabled ? 'success' : 'neutral'}>
                     {f.enabled ? 'Active' : 'Draft'}
                   </Badge>
                 </div>
 
-                <div className="flex items-center gap-3 text-xs text-[#8b949e]">
+                <div className="flex items-center gap-3 text-xs text-[var(--text-sec)]">
                   <span>Client {f.client_id}</span>
                   <span>{f.nodes.length} nodes</span>
                   <span>{f.edges.length} connections</span>
                 </div>
 
                 <div className="flex gap-1 pt-1" onClick={e => e.stopPropagation()}>
-                  <button onClick={() => navigate(`/flows/${f.id}`)} className="p-1.5 rounded-lg text-[#484f58] hover:text-blue-400 hover:bg-blue-500/10 transition-colors" title="Edit">
+                  <button onClick={() => navigate(`/flows/${f.id}`)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-blue-400 hover:bg-blue-500/10 transition-colors" title="Edit">
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
-                  <button onClick={() => toggleMutation.mutate(f.id)} className="p-1.5 rounded-lg text-[#484f58] hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors" title={f.enabled ? 'Disable' : 'Enable'}>
+                  <button onClick={() => toggleMutation.mutate(f.id)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors" title={f.enabled ? 'Disable' : 'Enable'}>
                     {f.enabled ? <PowerOff className="h-3.5 w-3.5" /> : <Power className="h-3.5 w-3.5" />}
                   </button>
-                  <button onClick={() => duplicateMutation.mutate(f.id)} className="p-1.5 rounded-lg text-[#484f58] hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors" title="Duplicate">
+                  <button onClick={() => duplicateMutation.mutate(f.id)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors" title="Duplicate">
                     <Copy className="h-3.5 w-3.5" />
                   </button>
-                  <button onClick={() => deleteMutation.mutate(f.id)} className="p-1.5 rounded-lg text-[#484f58] hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete">
+                  <button onClick={() => deleteMutation.mutate(f.id)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>

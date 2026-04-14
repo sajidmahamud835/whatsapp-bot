@@ -1,9 +1,10 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { useAuthStore } from '../../stores/auth-store';
+import { useThemeStore } from '../../stores/theme-store';
 import {
   LayoutDashboard, Smartphone, MessageSquare, Users, FileText,
-  Megaphone, Workflow, BarChart3, Webhook, Clock, Bot, Settings, LogOut, ChevronLeft,
+  Megaphone, Workflow, BarChart3, Webhook, Clock, Bot, Settings, LogOut, ChevronLeft, Sun, Moon,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -27,6 +28,7 @@ const navItems = [
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const logout = useAuthStore((s) => s.logout);
+  const { theme, toggle: toggleTheme } = useThemeStore();
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -36,15 +38,15 @@ export function Sidebar() {
 
   return (
     <aside className={cn(
-      'flex flex-col h-screen bg-[#0d1117] border-r border-[#30363d] transition-all duration-200',
+      'flex flex-col h-screen bg-[var(--bg)] border-r border-[var(--border)] transition-all duration-200',
       collapsed ? 'w-16' : 'w-56',
     )}>
       {/* Brand */}
-      <div className="flex items-center justify-between px-4 h-14 border-b border-[#30363d]">
+      <div className="flex items-center justify-between px-4 h-14 border-b border-[var(--border)]">
         {!collapsed && <span className="text-emerald-400 font-bold text-lg">WA Convo</span>}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-lg text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#21262d] transition-colors"
+          className="p-1.5 rounded-lg text-[var(--text-sec)] hover:text-[var(--text)] hover:bg-[var(--bg-hover)] transition-colors"
         >
           <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} />
         </button>
@@ -55,10 +57,10 @@ export function Sidebar() {
         {navItems.map((item, i) => {
           if ('type' in item && item.type === 'divider') {
             return !collapsed ? (
-              <p key={i} className="px-3 pt-5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#484f58]">
+              <p key={i} className="px-3 pt-5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
                 {item.label}
               </p>
-            ) : <div key={i} className="my-2 border-t border-[#21262d]" />;
+            ) : <div key={i} className="my-2 border-t border-[var(--border)]" />;
           }
 
           const { to, icon: Icon, label } = item as { to: string; icon: typeof LayoutDashboard; label: string };
@@ -71,7 +73,7 @@ export function Sidebar() {
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                 isActive
                   ? 'bg-emerald-500/10 text-emerald-400'
-                  : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#e6edf3]',
+                  : 'text-[var(--text-sec)] hover:bg-[var(--bg-hover)] hover:text-[var(--text)]',
                 collapsed && 'justify-center px-2',
               )}
               title={collapsed ? label : undefined}
@@ -83,12 +85,22 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Logout */}
-      <div className="px-2 py-3 border-t border-[#21262d]">
+      {/* Theme + Logout */}
+      <div className="px-2 py-3 border-t border-[var(--border)] space-y-1">
+        <button
+          onClick={toggleTheme}
+          className={cn(
+            'flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm text-[var(--text-sec)] hover:bg-[var(--bg-hover)] hover:text-[var(--text)] transition-colors',
+            collapsed && 'justify-center px-2',
+          )}
+        >
+          {theme === 'dark' ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
+          {!collapsed && <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
+        </button>
         <button
           onClick={handleLogout}
           className={cn(
-            'flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm text-[#8b949e] hover:bg-[#21262d] hover:text-red-400 transition-colors',
+            'flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm text-[var(--text-sec)] hover:bg-[var(--bg-hover)] hover:text-red-400 transition-colors',
             collapsed && 'justify-center px-2',
           )}
         >
