@@ -22,7 +22,7 @@ router.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'ok',
     service: 'WA Convo',
-    version: '4.0.0',
+    version: '4.2.0',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     clients: {

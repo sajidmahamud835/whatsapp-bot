@@ -1,8 +1,8 @@
 {
   "server": {
-    "port": 3000,
+    "port": 8585,
     "host": "127.0.0.1",
-    "apiKey": ""
+    "apiKey": "wc_b1db1ddb54defe5235685dab917be15193e848b81b3c898497dc4bd231ef2954"
   },
   "dashboard": {
     "enabled": false,
@@ -18,46 +18,29 @@
     "path": "./data/wa-convo.db",
     "retentionDays": 30
   },
-  "sessions": [],
   "ai": {
     "enabled": false,
     "defaultProvider": "",
+    "providers": {},
     "systemPrompt": "You are a helpful WhatsApp assistant.",
     "maxTokens": 500,
-    "temperature": 0.7,
-    "providers": {
-      "_example_openai": {
-        "type": "openai",
-        "apiKey": "",
-        "model": "gpt-4o-mini"
-      },
-      "_example_openrouter": {
-        "type": "openrouter",
-        "apiKey": "",
-        "baseUrl": "https://openrouter.ai/api/v1",
-        "model": "openai/gpt-4o-mini"
-      },
-      "_example_anthropic": {
-        "type": "anthropic",
-        "apiKey": "",
-        "model": "claude-3-haiku-20240307"
-      },
-      "_example_google": {
-        "type": "google",
-        "apiKey": "",
-        "model": "gemini-1.5-flash"
-      },
-      "_example_ollama": {
-        "type": "ollama",
-        "apiKey": "ollama",
-        "baseUrl": "http://localhost:11434/v1",
-        "model": "llama3.2"
-      }
-    }
+    "temperature": 0.7
   },
   "crons": [],
   "integrations": {
-    "webhooks": []
+    "webhooks": [
+      {
+        "id": "95beade6-b213-4526-8c3b-53b9edd7b9a2",
+        "url": "https://sanamedia.net/webhook.php",
+        "events": [
+          "message.received"
+        ],
+        "secret": "",
+        "enabled": true,
+        "createdAt": "2026-04-14T20:32:00.146Z",
+        "updatedAt": "2026-04-14T20:32:00.146Z"
+      }
+    ]
   },
   "logging": {
     "level": "info",
@@ -73,5 +56,6 @@
     "ssl": {
       "enabled": false
     }
-  }
+  },
+  "sessions": []
 }

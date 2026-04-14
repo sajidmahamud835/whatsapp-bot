@@ -61,7 +61,7 @@ export class BaileysEngine implements WhatsAppEngine {
         keys: makeCacheableSignalKeyStore(state.keys, baileysLogger),
       },
       printQRInTerminal: true,
-      browser: ['WA Convo', 'Chrome', '4.1.0'],
+      browser: ['WA Convo', 'Chrome', '4.2.0'],
       generateHighQualityLinkPreview: false,
     });
 

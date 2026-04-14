@@ -20,8 +20,12 @@ dist/
 .chromium-browser-snapshots/
 
 # Logs
+logs/
 *.log
 npm-debug.log*
+
+# Database
+data/
 
 # OS
 .DS_Store

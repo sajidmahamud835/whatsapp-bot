@@ -25,7 +25,9 @@ class AIManager {
     if (!aiConfig?.providers) return;
 
     for (const [name, providerCfg] of Object.entries(aiConfig.providers as Record<string, any>)) {
-      if (!providerCfg?.apiKey) continue;
+      // Skip example/placeholder entries and providers without a real API key
+      if (name.startsWith('_example')) continue;
+      if (!providerCfg?.apiKey || providerCfg.apiKey === '') continue;
 
       const opts = {
         apiKey: providerCfg.apiKey as string,

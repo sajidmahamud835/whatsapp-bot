@@ -261,6 +261,9 @@ wa-convo --help
 | `POST` | `/:id/messages/sticker` | Send sticker |
 | `POST` | `/:id/messages/voice` | Send voice note |
 | `POST` | `/:id/messages/read` | Mark as read `{keys[]}` |
+| `GET` | `/:id/messages/recent` | Recent messages `?limit=50` |
+| `GET` | `/:id/messages/conversations` | Conversation list with last message |
+| `GET` | `/:id/messages/conversation/:jid` | Message thread for a contact |
 
 ### Groups
 
