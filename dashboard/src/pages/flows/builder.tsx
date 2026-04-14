@@ -198,10 +198,14 @@ export default function FlowBuilder() {
               markerEnd: { type: MarkerType.ArrowClosed, color: '#484f58' },
             }}
             fitView
+            fitViewOptions={{ padding: 0.4, maxZoom: 0.85 }}
+            defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
+            minZoom={0.2}
+            maxZoom={1.5}
             className="bg-[#0d1117]"
             proOptions={{ hideAttribution: true }}
           >
-            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#21262d" />
+            <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="#21262d" />
             <Controls className="!bg-[#161b22] !border-[#30363d] !rounded-lg [&>button]:!bg-[#161b22] [&>button]:!border-[#30363d] [&>button]:!text-[#8b949e] [&>button:hover]:!bg-[#21262d]" />
             <MiniMap
               nodeColor="#30363d"
