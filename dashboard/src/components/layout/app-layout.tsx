@@ -1,6 +1,7 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/auth-store';
 import { Sidebar } from './sidebar';
+import { Onboarding } from '../onboarding';
 
 export function AppLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -17,6 +18,7 @@ export function AppLayout() {
           <Outlet />
         </div>
       </main>
+      <Onboarding />
     </div>
   );
 }

@@ -38,6 +38,7 @@ import analyticsRouter from '../pro/routes/analytics.js';
 import flowsRouter from '../pro/routes/flows.js';
 import { findMatchingFlows, executeFlow } from '../pro/services/flow-engine.js';
 import { getProDatabase } from '../pro/db/pro-database.js';
+import { seedBuiltinData } from '../pro/services/seed-data.js';
 
 // ─── Managers ─────────────────────────────────────────────────────────────────
 import { cronManager } from '../core/cron/manager.js';
@@ -158,6 +159,7 @@ async function start(): Promise<void> {
 
   getDatabase();
   getProDatabase(); // Initialize pro tables (contacts, templates, campaigns, flows)
+  seedBuiltinData(); // Seed 15 flows + 5 templates on first run
   log.info('Database initialized');
 
   // Schedule daily retention purge

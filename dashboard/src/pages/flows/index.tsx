@@ -9,7 +9,7 @@ import { Badge } from '../../components/ui/badge';
 import { Input } from '../../components/ui/input';
 import { Modal } from '../../components/ui/modal';
 import { EmptyState } from '../../components/ui/empty-state';
-import { Workflow, Plus, Trash2, Copy, Pencil, Power, PowerOff } from 'lucide-react';
+import { Workflow, Plus, Trash2, Copy, Pencil, Power, PowerOff, Download, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface BotFlow {
@@ -63,12 +63,44 @@ export default function Flows() {
     onError: handleError,
   });
 
+  const importMutation = useMutation({
+    mutationFn: (flowData: any) => api.post('/pro/flows/import', flowData),
+    onSuccess: () => { toast.success('Flow imported'); queryClient.invalidateQueries({ queryKey: ['flows'] }); },
+    onError: handleError,
+  });
+
   const flows = data?.flows || [];
+
+  function exportFlow(id: string, name: string) {
+    api.get(`/pro/flows/${id}/export`).then((data) => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = `${name.replace(/[^a-zA-Z0-9]/g, '_')}.json`; a.click();
+      toast.success('Flow exported');
+    }).catch(handleError);
+  }
+
+  function handleImport() {
+    const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        importMutation.mutate(data);
+      } catch { toast.error('Invalid JSON file'); }
+    };
+    input.click();
+  }
 
   return (
     <div>
-      <PageHeader title="Flow Builder" description="Create visual chatbot workflows" actions={
-        <Button onClick={() => setShowCreate(true)}><Plus className="h-4 w-4" /> New Flow</Button>
+      <PageHeader title="Flow Builder" description={`${flows.length} chatbot workflows`} actions={
+        <div className="flex gap-2">
+          <Button variant="secondary" size="sm" onClick={handleImport}><Upload className="h-3.5 w-3.5" /> Import</Button>
+          <Button onClick={() => setShowCreate(true)}><Plus className="h-4 w-4" /> New Flow</Button>
+        </div>
       } />
 
       {isLoading ? null : flows.length === 0 ? (
@@ -109,7 +141,10 @@ export default function Flows() {
                   <button onClick={() => duplicateMutation.mutate(f.id)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors" title="Duplicate">
                     <Copy className="h-3.5 w-3.5" />
                   </button>
-                  <button onClick={() => deleteMutation.mutate(f.id)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete">
+                  <button onClick={() => exportFlow(f.id, f.name)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors" title="Export">
+                    <Download className="h-3.5 w-3.5" />
+                  </button>
+                  <button onClick={() => { if (confirm('Delete this flow?')) deleteMutation.mutate(f.id); }} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors ml-auto" title="Delete">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>

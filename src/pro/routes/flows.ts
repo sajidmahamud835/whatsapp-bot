@@ -81,6 +81,46 @@ router.get('/pro/flows/:id/executions', (req: Request, res: Response) => {
   res.json({ executions, total: executions.length });
 });
 
+// ─── GET /pro/flows/:id/export — export flow as JSON ─────────────────────────
+
+router.get('/pro/flows/:id/export', (req: Request, res: Response) => {
+  const flow = flowService.get(String(req.params.id));
+  if (!flow) { res.status(404).json({ error: 'Flow not found' }); return; }
+  const exportData = {
+    _waconvo_flow: true,
+    version: 1,
+    name: flow.name,
+    description: flow.description,
+    trigger_type: flow.trigger_type,
+    trigger_config: flow.trigger_config,
+    nodes: flow.nodes,
+    edges: flow.edges,
+    variables: flow.variables,
+  };
+  res.setHeader('Content-Disposition', `attachment; filename="${flow.name.replace(/[^a-zA-Z0-9]/g, '_')}.json"`);
+  res.json(exportData);
+});
+
+// ─── POST /pro/flows/import — import flow from JSON ─────────────────────────
+
+router.post('/pro/flows/import', (req: Request, res: Response) => {
+  const data = req.body;
+  if (!data?._waconvo_flow) {
+    res.status(400).json({ error: 'Invalid flow file. Must be a WA Convo flow export.' });
+    return;
+  }
+  const flow = flowService.create({
+    name: data.name || 'Imported Flow',
+    description: data.description || '',
+    trigger_type: data.trigger_type,
+    trigger_config: data.trigger_config,
+    nodes: data.nodes || [],
+    edges: data.edges || [],
+  });
+  if (data.variables) flowService.update(flow.id, { variables: data.variables });
+  res.status(201).json({ success: true, flow: flowService.get(flow.id) });
+});
+
 // ─── DELETE /pro/flows/:id ───────────────────────────────────────────────────
 
 router.delete('/pro/flows/:id', (req: Request, res: Response) => {
