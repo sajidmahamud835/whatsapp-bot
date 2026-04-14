@@ -71,6 +71,7 @@ router.get('/:id/status', (req: Request, res: Response) => {
     disconnected: session.disconnected,
     phone: session.phone ?? null,
     name: session.name ?? null,
+    qrData: session.qrData ?? null,
   });
 });
 
