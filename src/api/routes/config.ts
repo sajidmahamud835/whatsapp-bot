@@ -7,23 +7,26 @@ const router = Router();
 
 // ─── Sensitive fields to redact from GET /config ──────────────────────────────
 
-const SENSITIVE_PATHS = ['server.apiKey', 'ai.providers'];
-
-function redactConfig(cfg: AppConfig): AppConfig {
-  const copy = structuredClone(cfg);
-  // Redact API key
-  if (copy.server?.apiKey) {
-    copy.server.apiKey = copy.server.apiKey.length > 0 ? '***' : '';
-  }
-  // Redact AI provider API keys
-  if (copy.ai?.providers) {
-    for (const key of Object.keys(copy.ai.providers)) {
-      const provider = copy.ai.providers[key];
-      if (provider?.apiKey) {
-        provider.apiKey = '***';
+/**
+ * Recursively redact any keys matching *Key, *Secret, *Token patterns.
+ */
+function redactSensitiveFields(obj: Record<string, any>): void {
+  for (const key of Object.keys(obj)) {
+    const val = obj[key];
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      redactSensitiveFields(val);
+    } else if (typeof val === 'string' && val.length > 0) {
+      const lower = key.toLowerCase();
+      if (lower.includes('key') || lower.includes('secret') || lower.includes('token') || lower.includes('password')) {
+        obj[key] = val.length > 4 ? '***' + val.slice(-4) : '***';
       }
     }
   }
+}
+
+function redactConfig(cfg: AppConfig): AppConfig {
+  const copy = structuredClone(cfg);
+  redactSensitiveFields(copy as unknown as Record<string, any>);
   return copy;
 }
 
@@ -48,7 +51,8 @@ router.get('/config/:path(*)', (req: Request, res: Response) => {
   }
 
   // Block sensitive paths
-  if (SENSITIVE_PATHS.some((s) => path.startsWith(s))) {
+  const SENSITIVE_PATHS = ['server.apiKey', 'ai.providers', 'integrations.meta'];
+  if (SENSITIVE_PATHS.some(s => path.startsWith(s))) {
     res.status(403).json({ error: 'Forbidden', message: 'This config path is sensitive and cannot be read via API' });
     return;
   }

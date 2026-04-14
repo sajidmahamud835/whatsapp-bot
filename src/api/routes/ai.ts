@@ -2,6 +2,8 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { aiManager } from '../../core/ai/manager.js';
 import { config } from '../../core/config.js';
+import { validate } from '../middleware/validate.js';
+import { aiTestSchema, aiPromptSchema, aiConfigSchema } from '../schemas/ai.js';
 
 const router = Router();
 
@@ -21,13 +23,8 @@ router.get('/ai/providers', (_req: Request, res: Response) => {
 
 // ─── POST /ai/test ────────────────────────────────────────────────────────────
 
-router.post('/ai/test', async (req: Request, res: Response) => {
-  const { message, provider } = req.body as { message?: string; provider?: string };
-
-  if (!message) {
-    res.status(400).json({ error: 'Bad Request', message: 'Missing required field: message' });
-    return;
-  }
+router.post('/ai/test', validate(aiTestSchema), async (req: Request, res: Response) => {
+  const { message, provider } = req.body as { message: string; provider?: string };
 
   if (!aiManager.isEnabled()) {
     res.status(400).json({ error: 'Bad Request', message: 'AI is not enabled. Set ai.enabled = true in config.' });
@@ -47,21 +44,15 @@ router.post('/ai/test', async (req: Request, res: Response) => {
 
 // ─── PUT /ai/prompt ───────────────────────────────────────────────────────────
 
-router.put('/ai/prompt', (req: Request, res: Response) => {
-  const { prompt } = req.body as { prompt?: string };
-
-  if (typeof prompt !== 'string') {
-    res.status(400).json({ error: 'Bad Request', message: 'Missing required field: prompt (string)' });
-    return;
-  }
-
+router.put('/ai/prompt', validate(aiPromptSchema), (req: Request, res: Response) => {
+  const { prompt } = req.body as { prompt: string };
   aiManager.updateSystemPrompt(prompt);
   res.json({ success: true, prompt });
 });
 
 // ─── PUT /ai/config ───────────────────────────────────────────────────────────
 
-router.put('/ai/config', (req: Request, res: Response) => {
+router.put('/ai/config', validate(aiConfigSchema), (req: Request, res: Response) => {
   const { enabled, defaultProvider, maxTokens, temperature } = req.body as {
     enabled?: boolean;
     defaultProvider?: string;

@@ -3,6 +3,8 @@ import type { Request, Response } from 'express';
 import axios from 'axios';
 import { toJid } from '../../core/client-manager.js';
 import { getSessionOrError, requireReady } from '../../utils/session.js';
+import { messageStore } from '../../core/db/message-store.js';
+import { getDatabase } from '../../core/db/database.js';
 
 const router = Router();
 
@@ -347,6 +349,64 @@ router.post('/:id/messages/read', async (req: Request, res: Response) => {
     await session.sock!.readMessages(keys as any);
     res.json({ success: true });
   } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── GET /:id/messages/recent — recent messages from DB ──────────────────────
+
+router.get('/:id/messages/recent', (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const limit = parseInt(req.query['limit'] as string) || 50;
+
+  try {
+    const messages = messageStore.getRecent(id, limit);
+    res.json({ messages, total: messages.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal Server Error', message: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── GET /:id/messages/conversation/:jid — messages for a specific contact ──
+
+router.get('/:id/messages/conversation/:jid', (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const jid = decodeURIComponent(req.params.jid as string);
+  const limit = parseInt(req.query['limit'] as string) || 50;
+  const offset = parseInt(req.query['offset'] as string) || 0;
+
+  try {
+    const messages = messageStore.getByJid(id, jid, limit, offset);
+    res.json({ messages, total: messages.length, jid });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal Server Error', message: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+// ─── GET /:id/messages/conversations — list conversations (unique JIDs) ─────
+
+router.get('/:id/messages/conversations', (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const limit = parseInt(req.query['limit'] as string) || 50;
+
+  try {
+    const db = getDatabase();
+    const conversations = db.prepare(`
+      SELECT
+        jid,
+        COUNT(*) as message_count,
+        MAX(body) as last_message,
+        MAX(timestamp) as last_timestamp,
+        SUM(CASE WHEN from_me = 0 THEN 1 ELSE 0 END) as received,
+        SUM(CASE WHEN from_me = 1 THEN 1 ELSE 0 END) as sent
+      FROM messages
+      WHERE client_id = ?
+      GROUP BY jid
+      ORDER BY last_timestamp DESC
+      LIMIT ?
+    `).all(id, limit);
+    res.json({ conversations, total: conversations.length });
+  } catch (err) {
     res.status(500).json({ error: 'Internal Server Error', message: err instanceof Error ? err.message : String(err) });
   }
 });

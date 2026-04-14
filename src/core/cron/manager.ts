@@ -2,6 +2,7 @@ import type { CronJobConfig } from '../types.js';
 import { config } from '../config.js';
 import { childLogger } from '../logger.js';
 import { sessions } from '../client-manager.js';
+import { cronLogStore } from '../db/cron-log-store.js';
 import { randomUUID } from 'crypto';
 
 const log = childLogger('cron-manager');
@@ -126,10 +127,20 @@ class CronManager {
       }
 
       if (taskEntry) taskEntry.lastError = undefined;
+
+      // Log successful execution
+      try {
+        cronLogStore.log({ job_id: cronConfig.id, action: cronConfig.action, success: true, error: null });
+      } catch { /* ignore db errors */ }
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
       log.error({ jobId: cronConfig.id }, 'Cron job error: %s', errMsg);
       if (taskEntry) taskEntry.lastError = errMsg;
+
+      // Log failed execution
+      try {
+        cronLogStore.log({ job_id: cronConfig.id, action: cronConfig.action, success: false, error: errMsg });
+      } catch { /* ignore db errors */ }
     }
   }
 

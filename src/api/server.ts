@@ -1,7 +1,9 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import { createServer } from 'http';
+import { readFileSync } from 'fs';
 import { config } from '../core/config.js';
 import { getLogger } from '../core/logger.js';
 import { eventBus } from '../core/events.js';
@@ -23,16 +25,39 @@ import configRouter from './routes/config.js';
 import webhookRouter from './routes/webhook.js';
 import aiRouter from './routes/ai.js';
 import cronRouter from './routes/cron.js';
+import webhooksRouter from './routes/webhooks.js';
+import statsRouter from './routes/stats.js';
 
 // ─── Managers ─────────────────────────────────────────────────────────────────
 import { cronManager } from '../core/cron/manager.js';
+import { webhookManager } from '../core/webhooks/manager.js';
+
+// ─── Database ────────────────────────────────────────────────────────────────
+import { getDatabase, closeDatabase } from '../core/db/database.js';
+import { messageStore } from '../core/db/message-store.js';
+import { aiHistoryStore } from '../core/db/ai-history-store.js';
+import { webhookLogStore } from '../core/db/webhook-log-store.js';
+import { cronLogStore } from '../core/db/cron-log-store.js';
 
 // ─── Initialize config & logger first ────────────────────────────────────────
 config.load();
 const log = getLogger();
 
 const app = express();
-const httpServer = createServer(app);
+
+// Create HTTP or HTTPS server based on SSL config
+const sslConfig = config.get<{ enabled: boolean; certPath?: string; keyPath?: string }>('deployment.ssl');
+let httpServer: ReturnType<typeof createServer>;
+if (sslConfig?.enabled && sslConfig.certPath && sslConfig.keyPath) {
+  const https = await import('https');
+  httpServer = https.createServer(
+    { cert: readFileSync(sslConfig.certPath), key: readFileSync(sslConfig.keyPath) },
+    app,
+  );
+  log.info('SSL enabled');
+} else {
+  httpServer = createServer(app);
+}
 
 const serverCfg = config.get<{ port: number; host: string }>('server');
 const port = serverCfg?.port ?? parseInt(process.env['PORT'] ?? '3000', 10);
@@ -40,9 +65,10 @@ const host = serverCfg?.host ?? process.env['HOST'] ?? '0.0.0.0';
 
 // ─── Global Middleware ────────────────────────────────────────────────────────
 
+app.use(helmet({ contentSecurityPolicy: false })); // CSP disabled for QR page inline scripts
 app.use(cors({ origin: process.env['CORS_ORIGIN'] ?? '*', credentials: true }));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(rateLimiter);
 
 // ─── Public Routes ────────────────────────────────────────────────────────────
@@ -51,7 +77,7 @@ app.get('/', (_req, res) => {
   res.json({
     name: 'WA Convo',
     description: 'WhatsApp Automation Platform',
-    version: '4.1.0',
+    version: '4.2.0',
     engine: 'Baileys + Official Cloud API',
     docs: 'https://github.com/sajidmahamud835/whatsapp-bot',
     websocket: `ws://${host}:${port}/ws`,
@@ -75,6 +101,8 @@ app.use(privacyRouter);
 app.use(configRouter);
 app.use(aiRouter);
 app.use(cronRouter);
+app.use(webhooksRouter);
+app.use(statsRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 
@@ -93,28 +121,53 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 
 async function start(): Promise<void> {
+  // Initialize database first (other modules depend on it)
+  getDatabase();
+  log.info('Database initialized');
+
+  // Schedule daily retention purge
+  const retentionDays = config.get<number>('database.retentionDays') ?? 30;
+  setInterval(() => {
+    try {
+      const msgPurged = messageStore.purge(retentionDays);
+      const aiPurged = aiHistoryStore.purge(retentionDays);
+      const whPurged = webhookLogStore.purge(retentionDays);
+      const cronPurged = cronLogStore.purge(retentionDays);
+      if (msgPurged + aiPurged + whPurged + cronPurged > 0) {
+        log.info('Retention purge: %d messages, %d AI history, %d webhook logs, %d cron logs removed', msgPurged, aiPurged, whPurged, cronPurged);
+      }
+    } catch (err) {
+      log.error({ err }, 'Retention purge error');
+    }
+  }, 24 * 60 * 60 * 1000); // Run daily
+
   // Initialize WhatsApp client sessions (also initializes AI manager)
   initializeSessions();
 
   // Initialize cron manager
   await cronManager.initialize();
 
+  // Initialize webhook manager
+  webhookManager.initialize();
+
   // Setup WebSocket
   setupWebSocket(httpServer);
 
   // Start HTTP server
   httpServer.listen(port, host, () => {
-    log.info({ port, host }, '🚀 WA Convo v4.1.0 started');
+    log.info({ port, host }, '🚀 WA Convo v4.2.0 started');
     log.info('   Health:    http://%s:%d/health', host, port);
     log.info('   Clients:   http://%s:%d/clients', host, port);
     log.info('   WebSocket: ws://%s:%d/ws', host, port);
     log.info('   Config:    http://%s:%d/config', host, port);
     log.info('   AI:        http://%s:%d/ai/providers', host, port);
     log.info('   Cron:      http://%s:%d/cron', host, port);
-    log.info('   Webhook:   http://%s:%d/webhook/whatsapp', host, port);
+    log.info('   Webhooks:  http://%s:%d/webhooks', host, port);
+    log.info('   Stats:     http://%s:%d/stats', host, port);
+    log.info('   Meta WH:   http://%s:%d/webhook/whatsapp', host, port);
 
     // Also log to console for visibility
-    console.log(`\n🟢 WA Convo v4.1.0 — WhatsApp Automation Platform`);
+    console.log(`\n🟢 WA Convo v4.2.0 — WhatsApp Automation Platform`);
     console.log(`   API:       http://${host}:${port}/`);
     console.log(`   Health:    http://${host}:${port}/health`);
     console.log(`   Clients:   http://${host}:${port}/clients`);
@@ -122,7 +175,9 @@ async function start(): Promise<void> {
     console.log(`   Config:    http://${host}:${port}/config`);
     console.log(`   AI:        http://${host}:${port}/ai/providers`);
     console.log(`   Cron:      http://${host}:${port}/cron`);
-    console.log(`   Webhook:   http://${host}:${port}/webhook/whatsapp\n`);
+    console.log(`   Webhooks:  http://${host}:${port}/webhooks`);
+    console.log(`   Stats:     http://${host}:${port}/stats`);
+    console.log(`   Meta WH:   http://${host}:${port}/webhook/whatsapp\n`);
 
     eventBus.emit('server.started', { port, host });
   });
@@ -133,6 +188,7 @@ process.on('SIGTERM', () => {
   log.info('SIGTERM received — shutting down');
   eventBus.emit('server.stopped', {});
   cronManager.stopAll();
+  closeDatabase();
   httpServer.close(() => process.exit(0));
 });
 
@@ -140,6 +196,7 @@ process.on('SIGINT', () => {
   log.info('SIGINT received — shutting down');
   eventBus.emit('server.stopped', {});
   cronManager.stopAll();
+  closeDatabase();
   httpServer.close(() => process.exit(0));
 });
 

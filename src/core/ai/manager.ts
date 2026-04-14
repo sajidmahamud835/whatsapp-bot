@@ -4,11 +4,10 @@ import { AnthropicProvider } from './providers/anthropic.js';
 import { GoogleProvider } from './providers/google.js';
 import { config } from '../config.js';
 import { childLogger } from '../logger.js';
+import { aiHistoryStore } from '../db/ai-history-store.js';
 
 const log = childLogger('ai-manager');
 
-// In-memory conversation context: Map<jid, messages>
-const conversationHistory = new Map<string, AIMessage[]>();
 const MAX_HISTORY = 10;
 
 class AIManager {
@@ -90,13 +89,9 @@ class AIManager {
 
     const systemPrompt = config.get<string>('ai.systemPrompt') || 'You are a helpful WhatsApp assistant.';
 
-    // Build conversation history
-    const history = conversationHistory.get(jid) ?? [];
-    history.push({ role: 'user', content: userMessage });
-
-    // Keep last MAX_HISTORY messages
-    const trimmed = history.slice(-MAX_HISTORY);
-    conversationHistory.set(jid, trimmed);
+    // Build conversation history from persistent store
+    aiHistoryStore.appendMessage(jid, 'user', userMessage);
+    const history = aiHistoryStore.getHistory(jid, MAX_HISTORY);
 
     // Try primary provider, then fall back through rest
     const allProviderNames = providerName
@@ -109,12 +104,10 @@ class AIManager {
       if (!provider) continue;
 
       try {
-        const response = await provider.chat(trimmed, systemPrompt);
+        const response = await provider.chat(history, systemPrompt);
 
-        // Save assistant response to history
-        const updatedHistory = conversationHistory.get(jid) ?? [];
-        updatedHistory.push({ role: 'assistant', content: response });
-        conversationHistory.set(jid, updatedHistory.slice(-MAX_HISTORY));
+        // Save assistant response to persistent store
+        aiHistoryStore.appendMessage(jid, 'assistant', response);
 
         return response;
       } catch (err) {
@@ -130,14 +123,14 @@ class AIManager {
    * Clear conversation history for a JID.
    */
   clearHistory(jid: string): void {
-    conversationHistory.delete(jid);
+    aiHistoryStore.clearHistory(jid);
   }
 
   /**
    * Get conversation history for a JID.
    */
   getHistory(jid: string): AIMessage[] {
-    return conversationHistory.get(jid) ?? [];
+    return aiHistoryStore.getHistory(jid, MAX_HISTORY);
   }
 
   /**

@@ -31,6 +31,13 @@ import {
   cronDeleteCommand,
   cronAddCommand,
 } from './commands/cron.js';
+import {
+  webhooksListCommand,
+  webhooksAddCommand,
+  webhooksRemoveCommand,
+  webhooksTestCommand,
+} from './commands/webhooks.js';
+import { statsCommand } from './commands/stats.js';
 
 // Load config first
 import { config } from '../core/config.js';
@@ -41,7 +48,7 @@ const program = new Command();
 program
   .name('wa-convo')
   .description('WA Convo — WhatsApp Automation Platform CLI')
-  .version('4.1.0');
+  .version('4.2.0');
 
 // ─── start ────────────────────────────────────────────────────────────────────
 
@@ -267,6 +274,51 @@ cronCmd
   .description('Delete a cron job')
   .action(async (id: string) => {
     await cronDeleteCommand(id);
+  });
+
+// ─── webhooks ────────────────────────────────────────────────────────────────
+
+const webhooksCmd = program
+  .command('webhooks')
+  .description('Manage webhook registrations');
+
+webhooksCmd
+  .command('list')
+  .description('List all registered webhooks')
+  .action(async () => {
+    await webhooksListCommand();
+  });
+
+webhooksCmd
+  .command('add <url>')
+  .description('Register a new webhook')
+  .option('-e, --events <events>', 'Comma-separated events (default: *)')
+  .option('-s, --secret <secret>', 'HMAC signing secret')
+  .action(async (url: string, options: { events?: string; secret?: string }) => {
+    await webhooksAddCommand(url, options);
+  });
+
+webhooksCmd
+  .command('remove <id>')
+  .description('Remove a registered webhook')
+  .action(async (id: string) => {
+    await webhooksRemoveCommand(id);
+  });
+
+webhooksCmd
+  .command('test <id>')
+  .description('Send a test payload to a webhook')
+  .action(async (id: string) => {
+    await webhooksTestCommand(id);
+  });
+
+// ─── stats ───────────────────────────────────────────────────────────────────
+
+program
+  .command('stats')
+  .description('Show server stats and metrics')
+  .action(async () => {
+    await statsCommand();
   });
 
 // ─── logs ─────────────────────────────────────────────────────────────────────

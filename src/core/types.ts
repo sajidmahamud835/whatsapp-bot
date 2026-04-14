@@ -114,8 +114,13 @@ export interface WebhookConfig {
   secret?: string;
 }
 
+export interface MetaConfig {
+  appSecret?: string;
+}
+
 export interface IntegrationsConfig {
   webhooks: WebhookConfig[];
+  meta?: MetaConfig;
 }
 
 export interface LoggingConfig {
@@ -139,10 +144,16 @@ export interface DeploymentConfig {
   ssl: SSLConfig;
 }
 
+export interface DatabaseConfig {
+  path: string;
+  retentionDays: number;
+}
+
 export interface AppConfig {
   server: ServerConfig;
   dashboard: DashboardConfig;
   clients: ClientsConfig;
+  database: DatabaseConfig;
   ai: AIConfig;
   crons: CronJobConfig[];
   integrations: IntegrationsConfig;

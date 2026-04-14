@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import { childLogger } from '../../core/logger.js';
 import { sessions } from '../../core/client-manager.js';
 import { OfficialEngine } from '../../core/engines/official.js';
+import { hmacVerify } from '../middleware/hmac-verify.js';
 
 const router = Router();
 const log = childLogger('webhook-route');
@@ -47,7 +48,7 @@ router.get('/webhook/whatsapp', (req: Request, res: Response) => {
 
 // ─── POST /webhook/whatsapp — Incoming Meta events ───────────────────────────
 
-router.post('/webhook/whatsapp', (req: Request, res: Response) => {
+router.post('/webhook/whatsapp', hmacVerify, (req: Request, res: Response) => {
   // Respond 200 immediately (Meta requires fast ACK)
   res.status(200).json({ status: 'ok' });
 

@@ -1,5 +1,64 @@
 # Changelog
 
+## [4.2.0] - 2026-04-15
+
+### Added — Phase 3: Persistence, Security, Webhooks, Stats, Tests
+
+#### SQLite Persistence (`src/core/db/`)
+- **`database.ts`** — Singleton `better-sqlite3` wrapper with WAL mode, migrations runner, graceful shutdown
+- **`migrations/001-initial.ts`** — Creates `messages`, `ai_conversations`, `webhook_deliveries`, `cron_executions` tables
+- **`message-store.ts`** — Insert, query by JID, recent messages, count, purge by retention days
+- **`ai-history-store.ts`** — Persistent AI conversation history (replaces in-memory Map in AIManager)
+- **`webhook-log-store.ts`** — Webhook delivery attempt logging with query support
+- **`cron-log-store.ts`** — Cron job execution logging
+- **Retention purge** — Automatic daily cleanup based on `database.retentionDays` config (default 30 days)
+- **Config**: `database.path` (default `./data/wa-convo.db`), `database.retentionDays`
+
+#### Security Hardening
+- **`helmet`** middleware — Security headers (X-Content-Type-Options, HSTS, etc.)
+- **`zod` validation** — Request body validation on all POST/PUT routes with structured error responses
+- **Per-route body limits** — 1MB default, 50MB for media endpoints only
+- **HMAC verification** — Meta webhook `X-Hub-Signature-256` signature verification (`src/api/middleware/hmac-verify.ts`)
+- **SSL/TLS support** — Conditional HTTPS server creation when `deployment.ssl.enabled` is set
+- **Improved config redaction** — Recursively redacts all fields matching `*Key`, `*Secret`, `*Token`, `*Password`
+- **Phone redaction default** — `logging.redactNumbers` now defaults to `true`
+- **Zod schemas** — `src/api/schemas/` with schemas for client, messages, groups, AI, cron, webhooks
+
+#### Webhook Dispatch System (`src/core/webhooks/`)
+- **`WebhookManager`** singleton — Multi-webhook registration, event-based dispatch via event bus
+- **HMAC signing** — Per-webhook secret with `X-WA-Signature-256` header
+- **Exponential backoff retry** — 1s → 5s → 30s → 5min, max 5 attempts per delivery
+- **Delivery logging** — All attempts logged to SQLite for audit
+- **REST API** — `POST/GET/PUT/DELETE /webhooks`, `POST /webhooks/:id/test`, `GET /webhooks/:id/deliveries`
+- **Legacy migration** — `WEBHOOK_URL` env var auto-migrated to webhook entry with deprecation warning
+- Removed legacy webhook bridge from `client-manager.ts`
+
+#### Stats Endpoint
+- **`GET /stats`** — Server metrics: uptime, memory, client counts, message counts (24h), AI stats, cron stats, webhook stats
+- **`StatsCollector`** (`src/core/stats.ts`) — Cached stats with 5s TTL to avoid DB hammering
+
+#### Testing Foundation
+- **Jest + ts-jest** ESM config with `jest.config.ts`
+- **14 tests** across 2 test suites:
+  - `tests/unit/database.test.ts` — Message store CRUD, AI history, cron logs, webhook logs (11 tests)
+  - `tests/integration/auth.test.ts` — Auth middleware: no key, valid key, invalid key (3 tests)
+- **Mock helpers** — `tests/helpers/mock-session.ts` with mock WASocket and ClientSession
+
+### Changed
+- Version bumped to 4.2.0
+- Global body parser limit reduced from 50MB to 1MB (media routes get 50MB override)
+- AI conversation history persisted to SQLite (previously in-memory, lost on restart)
+- Cron job executions logged to SQLite
+- Incoming messages stored in SQLite
+- Startup log updated with new endpoints (webhooks, stats)
+
+### Removed
+- Legacy `WEBHOOK_URL` bridge in `client-manager.ts` (replaced by WebhookManager)
+- Legacy test files `tests/app.test.js` and `tests/integration.test.js`
+- Inline Jest config from `package.json`
+
+---
+
 ## [4.1.0] - 2026-03-29
 
 ### Added — Phase 2: Dual Engine, AI Integration, Cron System

@@ -12,7 +12,7 @@ import axios from 'axios';
 import path from 'path';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
-import type { ClientSession, WebhookPayload } from './types.js';
+import type { ClientSession } from './types.js';
 import { config } from './config.js';
 import { baileysLogger, childLogger } from './logger.js';
 import { eventBus } from './events.js';
@@ -20,6 +20,7 @@ import type { WhatsAppEngine } from './engines/types.js';
 import { BaileysEngine } from './engines/baileys.js';
 import { OfficialEngine } from './engines/official.js';
 import { aiManager } from './ai/manager.js';
+import { messageStore } from './db/message-store.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const log = childLogger('client-manager');
@@ -27,10 +28,6 @@ const log = childLogger('client-manager');
 function getAuthDir(): string {
   const authDir = config.get<string>('clients.authDir') ?? '.auth';
   return resolve(__dirname, '..', '..', authDir);
-}
-
-function getWebhookUrl(): string {
-  return process.env['WEBHOOK_URL'] ?? process.env['POST_API'] ?? '';
 }
 
 function getClientCount(): number {
@@ -174,8 +171,6 @@ async function connectToWhatsApp(session: ClientSession): Promise<void> {
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type !== 'notify') return;
 
-    const webhookUrl = getWebhookUrl();
-
     for (const msg of messages) {
       if (!msg.message || isJidBroadcast(msg.key.remoteJid ?? '')) continue;
 
@@ -197,6 +192,8 @@ async function connectToWhatsApp(session: ClientSession): Promise<void> {
 
       log.debug({ clientId: id, from }, 'Message received: %s', body);
 
+      const msgType = Object.keys(msg.message)[0] ?? 'unknown';
+
       // Emit event
       eventBus.emit('message.received', {
         clientId: id,
@@ -205,44 +202,32 @@ async function connectToWhatsApp(session: ClientSession): Promise<void> {
         timestamp,
         isGroup,
         hasMedia,
-        type: Object.keys(msg.message)[0] ?? 'unknown',
+        type: msgType,
         raw: msg,
       });
+
+      // Persist message to database
+      try {
+        messageStore.insert({
+          id: msg.key.id ?? `${id}-${timestamp}-${Math.random().toString(36).slice(2)}`,
+          client_id: id,
+          jid: from,
+          body: body || null,
+          type: msgType,
+          timestamp,
+          from_me: msg.key.fromMe ?? false,
+          has_media: hasMedia,
+        });
+      } catch {
+        // Don't let DB errors break message handling
+      }
 
       // Built-in auto-reply
       if (body === '!ping') {
         await sock.sendMessage(from, { text: 'pong' }, { quoted: msg });
       }
 
-      // Webhook bridge
-      if (webhookUrl) {
-        try {
-          const payload: WebhookPayload = {
-            instanceId: id,
-            id: msg.key,
-            body,
-            from,
-            to: jidNormalizedUser(sock.user?.id ?? ''),
-            type: Object.keys(msg.message)[0] ?? 'unknown',
-            timestamp,
-            hasMedia,
-            isGroup,
-          };
-
-          const response = await axios.post(webhookUrl, payload, { timeout: 10_000 });
-
-          if (response.data?.reply) {
-            await sock.sendMessage(from, { text: String(response.data.reply) }, { quoted: msg });
-          }
-          if (response.data?.replyMedia) {
-            const buf = Buffer.from(String(response.data.replyMedia), 'base64');
-            await sock.sendMessage(from, { image: buf }, { quoted: msg });
-          }
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : String(err);
-          log.error({ clientId: id }, 'Webhook error: %s', message);
-        }
-      }
+      // Webhooks are now dispatched by WebhookManager via the event bus
     }
   });
 }

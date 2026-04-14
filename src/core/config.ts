@@ -25,6 +25,10 @@ const DEFAULT_CONFIG: AppConfig = {
     reconnectInterval: 5000,
     authDir: '.auth',
   },
+  database: {
+    path: './data/wa-convo.db',
+    retentionDays: 30,
+  },
   ai: {
     enabled: false,
     defaultProvider: '',
@@ -43,7 +47,7 @@ const DEFAULT_CONFIG: AppConfig = {
     console: true,
     file: true,
     maxFiles: 30,
-    redactNumbers: false,
+    redactNumbers: true,
   },
   deployment: {
     mode: 'local',

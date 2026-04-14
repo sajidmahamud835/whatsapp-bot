@@ -8,6 +8,9 @@ import type {
   SendButtonsBody,
   BulkResult,
 } from '../../core/types.js';
+import { validate } from '../middleware/validate.js';
+import { bodyLimit } from '../middleware/body-limit.js';
+import { sendMessageSchema, sendMediaSchema, sendBulkSchema, sendButtonsSchema } from '../schemas/client.js';
 
 const router = Router();
 
@@ -204,15 +207,11 @@ router.get('/:id/exit', async (req: Request, res: Response) => {
 
 // ─── Messaging ────────────────────────────────────────────────────────────────
 
-router.post('/:id/send', async (req: Request, res: Response) => {
+router.post('/:id/send', validate(sendMessageSchema), async (req: Request, res: Response) => {
   const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
-  const { number, message } = req.body as Partial<SendMessageBody>;
-  if (!number || !message) {
-    res.status(400).json({ error: 'Bad Request', message: 'Missing required fields: number, message' });
-    return;
-  }
+  const { number, message } = req.body as SendMessageBody;
 
   try {
     const messageId = await sendText(session.sock!, number, message);
@@ -223,15 +222,11 @@ router.post('/:id/send', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/:id/sendMedia', async (req: Request, res: Response) => {
+router.post('/:id/sendMedia', bodyLimit('50mb'), validate(sendMediaSchema), async (req: Request, res: Response) => {
   const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
-  const { number, mediaUrl, caption } = req.body as Partial<SendMediaBody>;
-  if (!number || !mediaUrl) {
-    res.status(400).json({ error: 'Bad Request', message: 'Missing required fields: number, mediaUrl' });
-    return;
-  }
+  const { number, mediaUrl, caption } = req.body as SendMediaBody;
 
   try {
     const messageId = await sendMedia(session.sock!, number, mediaUrl, caption ?? '');
@@ -242,15 +237,11 @@ router.post('/:id/sendMedia', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/:id/sendBulk', async (req: Request, res: Response) => {
+router.post('/:id/sendBulk', validate(sendBulkSchema), async (req: Request, res: Response) => {
   const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
-  const { numbers, message } = req.body as Partial<SendBulkBody>;
-  if (!Array.isArray(numbers) || !numbers.length || !message) {
-    res.status(400).json({ error: 'Bad Request', message: 'Missing required fields: numbers (array), message' });
-    return;
-  }
+  const { numbers, message } = req.body as SendBulkBody;
 
   const results: BulkResult[] = [];
   for (const number of numbers) {
@@ -267,15 +258,11 @@ router.post('/:id/sendBulk', async (req: Request, res: Response) => {
   res.status(allOk ? 200 : 207).json({ results });
 });
 
-router.post('/:id/sendButtons', async (req: Request, res: Response) => {
+router.post('/:id/sendButtons', validate(sendButtonsSchema), async (req: Request, res: Response) => {
   const session = getSessionOrError((req.params.id as string), res);
   if (!session || !requireReady(session, res)) return;
 
-  const { number, body, buttons, footer } = req.body as Partial<SendButtonsBody>;
-  if (!number || !body || !Array.isArray(buttons) || !buttons.length) {
-    res.status(400).json({ error: 'Bad Request', message: 'Missing required fields: number, body, buttons' });
-    return;
-  }
+  const { number, body, buttons, footer } = req.body as SendButtonsBody;
 
   try {
     const jid = toJid(number);

@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { cronManager } from '../../core/cron/manager.js';
+import { validate } from '../middleware/validate.js';
+import { createCronSchema, updateCronSchema } from '../schemas/cron.js';
 
 const router = Router();
 
@@ -13,23 +15,15 @@ router.get('/cron', (_req: Request, res: Response) => {
 
 // ─── POST /cron — create job ──────────────────────────────────────────────────
 
-router.post('/cron', async (req: Request, res: Response) => {
+router.post('/cron', validate(createCronSchema), async (req: Request, res: Response) => {
   const { name, schedule, clientId, action, params, enabled } = req.body as {
-    name?: string;
-    schedule?: string;
-    clientId?: string;
-    action?: string;
-    params?: Record<string, unknown>;
-    enabled?: boolean;
+    name: string;
+    schedule: string;
+    clientId: string;
+    action: string;
+    params: Record<string, unknown>;
+    enabled: boolean;
   };
-
-  if (!name || !schedule || !clientId || !action) {
-    res.status(400).json({
-      error: 'Bad Request',
-      message: 'Missing required fields: name, schedule, clientId, action',
-    });
-    return;
-  }
 
   try {
     const job = await cronManager.addJob({ name, schedule, clientId, action, params, enabled });
@@ -44,10 +38,10 @@ router.post('/cron', async (req: Request, res: Response) => {
 
 // ─── PUT /cron/:id — update job ───────────────────────────────────────────────
 
-router.put('/cron/:id', async (req: Request, res: Response) => {
+router.put('/cron/:id', validate(updateCronSchema), async (req: Request, res: Response) => {
   const id = req.params.id as string;
   try {
-    const job = await cronManager.updateJob(id!, req.body as any);
+    const job = await cronManager.updateJob(id!, req.body);
     res.json({ success: true, job });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
