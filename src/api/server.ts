@@ -3,7 +3,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { createServer } from 'http';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { config } from '../core/config.js';
 import { getLogger } from '../core/logger.js';
 import { eventBus } from '../core/events.js';
@@ -27,6 +29,15 @@ import aiRouter from './routes/ai.js';
 import cronRouter from './routes/cron.js';
 import webhooksRouter from './routes/webhooks.js';
 import statsRouter from './routes/stats.js';
+
+// ─── Pro Routes (contacts, templates, campaigns, analytics, flows) ──────────
+import contactManagerRouter from '../pro/routes/contacts-manager.js';
+import campaignsRouter from '../pro/routes/campaigns.js';
+import templatesRouter from '../pro/routes/templates.js';
+import analyticsRouter from '../pro/routes/analytics.js';
+import flowsRouter from '../pro/routes/flows.js';
+import { findMatchingFlows, executeFlow } from '../pro/services/flow-engine.js';
+import { getProDatabase } from '../pro/db/pro-database.js';
 
 // ─── Managers ─────────────────────────────────────────────────────────────────
 import { cronManager } from '../core/cron/manager.js';
@@ -71,6 +82,17 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(rateLimiter);
 
+// ─── Dashboard Static Files ──────────────────────────────────────────────────
+
+const __serverDirname = dirname(fileURLToPath(import.meta.url));
+const dashboardDistPath = resolve(__serverDirname, '..', '..', 'dashboard', 'dist');
+if (existsSync(dashboardDistPath)) {
+  app.use('/dashboard', express.static(dashboardDistPath));
+  app.get('/dashboard/*', (_req, res) => {
+    res.sendFile(resolve(dashboardDistPath, 'index.html'));
+  });
+}
+
 // ─── Public Routes ────────────────────────────────────────────────────────────
 
 app.get('/', (_req, res) => {
@@ -99,6 +121,13 @@ app.use(cronRouter);
 app.use(webhooksRouter);
 app.use(statsRouter);
 
+// Pro feature routes
+app.use(contactManagerRouter);
+app.use(campaignsRouter);
+app.use(templatesRouter);
+app.use(analyticsRouter);
+app.use(flowsRouter);
+
 // Client routes (/:id param) must come after named routes
 app.use(clientRouter);
 app.use(messagesRouter);
@@ -125,8 +154,10 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 
 async function start(): Promise<void> {
-  // Initialize database first (other modules depend on it)
+  // Initialize databases
+
   getDatabase();
+  getProDatabase(); // Initialize pro tables (contacts, templates, campaigns, flows)
   log.info('Database initialized');
 
   // Schedule daily retention purge
@@ -153,6 +184,18 @@ async function start(): Promise<void> {
 
   // Initialize webhook manager
   webhookManager.initialize();
+
+  // Hook flow engine into message events
+  eventBus.on('message.received', async (event) => {
+    try {
+      const flows = findMatchingFlows(event.clientId, event.from, event.body);
+      for (const flow of flows) {
+        await executeFlow(flow, event.clientId, event.from, event.body);
+      }
+    } catch (err) {
+      log.error({ err }, 'Flow execution error');
+    }
+  });
 
   // Setup WebSocket
   setupWebSocket(httpServer);
