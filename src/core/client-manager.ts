@@ -317,6 +317,13 @@ export async function logoutSession(id: string): Promise<void> {
 
 // ─── Messaging helpers ────────────────────────────────────────────────────────
 
+function findClientId(sock: WASocket): string {
+  for (const [id, session] of sessions) {
+    if (session.sock === sock) return id;
+  }
+  return 'unknown';
+}
+
 export async function sendText(
   sock: WASocket,
   number: string,
@@ -324,7 +331,23 @@ export async function sendText(
 ): Promise<string> {
   const jid = toJid(number);
   const result = await sock.sendMessage(jid, { text: message });
-  return result?.key.id ?? '';
+  const msgId = result?.key.id ?? '';
+
+  // Persist outgoing message
+  try {
+    messageStore.insert({
+      id: msgId || `out-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      client_id: findClientId(sock),
+      jid,
+      body: message,
+      type: 'conversation',
+      timestamp: Math.floor(Date.now() / 1000),
+      from_me: true,
+      has_media: false,
+    });
+  } catch { /* don't break send on DB error */ }
+
+  return msgId;
 }
 
 export async function sendMedia(

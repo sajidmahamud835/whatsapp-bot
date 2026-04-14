@@ -90,7 +90,16 @@ app.use(webhookRouter);
 // ─── Protected Routes ─────────────────────────────────────────────────────────
 
 app.use(apiKeyAuth);
+
+// Named routes first (before /:id catch-all in clientRouter)
 app.use(healthRouter);
+app.use(configRouter);
+app.use(aiRouter);
+app.use(cronRouter);
+app.use(webhooksRouter);
+app.use(statsRouter);
+
+// Client routes (/:id param) must come after named routes
 app.use(clientRouter);
 app.use(messagesRouter);
 app.use(groupsRouter);
@@ -98,11 +107,6 @@ app.use(contactsRouter);
 app.use(statusRouter);
 app.use(presenceRouter);
 app.use(privacyRouter);
-app.use(configRouter);
-app.use(aiRouter);
-app.use(cronRouter);
-app.use(webhooksRouter);
-app.use(statsRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 
