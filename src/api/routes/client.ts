@@ -1,6 +1,12 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
+import { existsSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { rmSync } from 'fs';
 import { sessions, startSession, destroySession, logoutSession, sendText, sendMedia, toJid } from '../../core/client-manager.js';
+import { config } from '../../core/config.js';
+import { messageStore } from '../../core/db/message-store.js';
 import type {
   SendMessageBody,
   SendMediaBody,
@@ -64,6 +70,25 @@ router.get('/:id', (req: Request, res: Response) => {
 router.get('/:id/status', (req: Request, res: Response) => {
   const session = getSessionOrError((req.params.id as string), res);
   if (!session) return;
+
+  // Session health check — detect encryption issues
+  // If recent messages are mostly protocolMessage with no real text, keys may be bad
+  let sessionHealth: 'good' | 'warning' | 'unknown' = 'unknown';
+  let healthMessage = '';
+  try {
+    const recent = messageStore.getRecent(session.id, 10);
+    if (recent.length >= 3) {
+      const protocolOnly = recent.filter(m => m.type === 'protocolMessage' && !m.body);
+      const withBody = recent.filter(m => m.body && m.body.length > 0);
+      if (protocolOnly.length >= 5 && withBody.length === 0) {
+        sessionHealth = 'warning';
+        healthMessage = 'Possible encryption key issue. Messages may not be readable. Try "Reset Session".';
+      } else {
+        sessionHealth = 'good';
+      }
+    }
+  } catch { /* DB not ready yet */ }
+
   res.json({
     id: session.id,
     isInitialized: session.isInitialized,
@@ -72,7 +97,47 @@ router.get('/:id/status', (req: Request, res: Response) => {
     phone: session.phone ?? null,
     name: session.name ?? null,
     qrData: session.qrData ?? null,
+    sessionHealth,
+    healthMessage,
   });
+});
+
+// ─── POST /:id/reset — one-click session reset (logout + clear auth + re-init)
+router.post('/:id/reset', async (req: Request, res: Response) => {
+  const session = getSessionOrError((req.params.id as string), res);
+  if (!session) return;
+
+  const id = session.id;
+  try {
+    // 1. Logout if connected
+    if (session.sock) {
+      try { await session.sock.logout(); } catch { /* may already be disconnected */ }
+    }
+
+    // 2. Reset session state
+    session.isInitialized = false;
+    session.isReady = false;
+    session.disconnected = true;
+    session.sock = null;
+    session.phone = null;
+    session.name = null;
+    session.qrData = null;
+
+    // 3. Delete auth folder
+    const authDir = config.get<string>('clients.authDir') ?? '.auth';
+    const __dir = dirname(fileURLToPath(import.meta.url));
+    const authPath = resolve(__dir, '..', '..', '..', authDir, `session-${id}`);
+    if (existsSync(authPath)) {
+      rmSync(authPath, { recursive: true, force: true });
+    }
+
+    // 4. Re-initialize (will generate new QR)
+    await startSession(id);
+
+    res.json({ success: true, message: `Client ${id} reset. Scan new QR to reconnect.` });
+  } catch (err) {
+    res.status(500).json({ error: 'Reset failed', message: err instanceof Error ? err.message : String(err) });
+  }
 });
 
 // ─── Init / QR / Logout / Exit ────────────────────────────────────────────────

@@ -9,17 +9,21 @@ import { StatusDot } from '../../components/ui/status-dot';
 import { Modal } from '../../components/ui/modal';
 import { SkeletonCard } from '../../components/ui/skeleton';
 import { EmptyState } from '../../components/ui/empty-state';
-import { Smartphone, QrCode, LogOut } from 'lucide-react';
+import { ConfirmDialog } from '../../components/ui/confirm-dialog';
+import { Smartphone, QrCode, LogOut, RotateCcw, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Client {
   id: string; isInitialized: boolean; isReady: boolean; disconnected: boolean;
   phone?: string; name?: string; qrData?: string | null;
+  sessionHealth?: 'good' | 'warning' | 'unknown';
+  healthMessage?: string;
 }
 
 export default function Clients() {
   const queryClient = useQueryClient();
   const [qrClientId, setQrClientId] = useState<string | null>(null);
+  const [resetClientId, setResetClientId] = useState<string | null>(null);
 
   const { data: clients, isLoading } = useQuery({
     queryKey: ['clients'],
@@ -59,6 +63,32 @@ export default function Clients() {
     mutationFn: (id: string) => api.post(`/${id}/logout`),
     onSuccess: () => { toast.success('Client logged out'); queryClient.invalidateQueries({ queryKey: ['clients'] }); },
     onError: handleError,
+  });
+
+  const resetMutation = useMutation({
+    mutationFn: (id: string) => api.post(`/${id}/reset`),
+    onSuccess: (_data, id) => {
+      toast.success('Session reset! Scan new QR.');
+      setResetClientId(null);
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      setTimeout(() => setQrClientId(id), 1500);
+    },
+    onError: handleError,
+  });
+
+  // Fetch health status for connected clients
+  const clientIds = (clients || []).filter(c => c.isReady).map(c => c.id);
+  const healthQueries = useQuery({
+    queryKey: ['client-health', clientIds.join(',')],
+    queryFn: async () => {
+      const results: Record<string, Client> = {};
+      for (const id of clientIds) {
+        try { results[id] = await api.get<Client>(`/${id}/status`); } catch {}
+      }
+      return results;
+    },
+    enabled: clientIds.length > 0,
+    refetchInterval: 15000,
   });
 
   if (isLoading) {
@@ -102,6 +132,17 @@ export default function Clients() {
                   </div>
                 )}
 
+                {/* Session health warning */}
+                {c.isReady && healthQueries.data?.[c.id]?.sessionHealth === 'warning' && (
+                  <div className="flex items-start gap-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 px-3 py-2">
+                    <AlertTriangle className="h-4 w-4 text-yellow-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-medium text-yellow-400">Encryption Issue Detected</p>
+                      <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Messages may not be readable. Click "Reset Session" to fix.</p>
+                    </div>
+                  </div>
+                )}
+
                 {c.isInitialized && !c.isReady && (
                   <p className="text-xs text-[var(--text-muted)]">Waiting for QR scan...</p>
                 )}
@@ -118,9 +159,14 @@ export default function Clients() {
                     </Button>
                   )}
                   {c.isReady && (
+                    <>
+                    <Button size="sm" variant="secondary" onClick={() => setResetClientId(c.id)}>
+                      <RotateCcw className="h-3.5 w-3.5" /> Reset Session
+                    </Button>
                     <Button size="sm" variant="danger" onClick={() => { if (confirm(`Logout Client ${c.id}?`)) logoutMutation.mutate(c.id); }} isLoading={logoutMutation.isPending}>
                       <LogOut className="h-3.5 w-3.5" /> Logout
                     </Button>
+                    </>
                   )}
                 </div>
               </CardContent>
@@ -128,6 +174,18 @@ export default function Clients() {
           ))}
         </div>
       )}
+
+      {/* Reset Session Confirm */}
+      <ConfirmDialog
+        open={!!resetClientId}
+        onClose={() => setResetClientId(null)}
+        onConfirm={() => { if (resetClientId) resetMutation.mutate(resetClientId); }}
+        title="Reset Session?"
+        message="This will logout, delete encryption keys, and generate a new QR code. You'll need to scan again from your phone. This fixes 'waiting for this message' errors."
+        confirmLabel="Reset & Reconnect"
+        variant="primary"
+        isLoading={resetMutation.isPending}
+      />
 
       {/* QR Code Modal */}
       <Modal open={!!qrClientId} onClose={() => setQrClientId(null)} title={`Scan QR — Client ${qrClientId}`}>
