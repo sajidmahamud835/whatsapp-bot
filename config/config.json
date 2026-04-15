@@ -26,7 +26,34 @@
     "maxTokens": 500,
     "temperature": 0.7
   },
-  "crons": [],
+  "crons": [
+    {
+      "id": "e0120564-12f1-4d17-85ec-917b1d8c25cb",
+      "name": "Test Broadcast",
+      "schedule": "0 0 31 2 *",
+      "clientId": "1",
+      "action": "broadcast",
+      "params": {
+        "numbers": [
+          "8801344624189",
+          "8801304854562"
+        ],
+        "message": "?? Broadcast test! This message was sent to multiple recipients."
+      },
+      "enabled": true
+    },
+    {
+      "id": "8be721c6-a545-47e2-bb02-9a00572ba582",
+      "name": "Test Status Post",
+      "schedule": "0 0 31 2 *",
+      "clientId": "1",
+      "action": "postStatus",
+      "params": {
+        "text": "?? WA Convo is online and running! Automated status update."
+      },
+      "enabled": true
+    }
+  ],
   "integrations": {
     "webhooks": [
       {

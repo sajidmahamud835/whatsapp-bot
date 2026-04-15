@@ -38,6 +38,12 @@ import {
   webhooksTestCommand,
 } from './commands/webhooks.js';
 import { statsCommand } from './commands/stats.js';
+import { messagesConversationsCommand, messagesHistoryCommand } from './commands/messages.js';
+import { proContactsListCommand, proContactsAddCommand, proContactsDeleteCommand, proContactsImportCommand, proContactsExportCommand, proTagsListCommand, proTagsAddCommand } from './commands/pro-contacts.js';
+import { templatesListCommand, templatesSendCommand } from './commands/templates.js';
+import { campaignsListCommand, campaignsCreateCommand, campaignsSendCommand, campaignsDeleteCommand } from './commands/campaigns.js';
+import { flowsListCommand, flowsEnableCommand, flowsDisableCommand, flowsExportCommand, flowsImportCommand, flowsDeleteCommand, flowsTestCommand, analyticsCommand } from './commands/flows.js';
+import { apiRequest } from './utils.js';
 
 // Load config first
 import { config } from '../core/config.js';
@@ -111,6 +117,16 @@ clientCmd
   .description('Logout a client from WhatsApp')
   .action(async (id: string) => {
     await clientLogoutCommand(id);
+  });
+
+clientCmd
+  .command('reset <id>')
+  .description('Reset session (fixes encryption issues)')
+  .action(async (id: string) => {
+    try {
+      await apiRequest(`/${id}/reset`, 'POST');
+      console.log(`Client ${id} reset. Scan new QR to reconnect.`);
+    } catch (err: any) { console.error(err.message); }
   });
 
 // ─── send ─────────────────────────────────────────────────────────────────────
@@ -320,6 +336,126 @@ program
   .action(async () => {
     await statsCommand();
   });
+
+// ─── messages ────────────────────────────────────────────────────────────────
+
+const messagesCmd = program
+  .command('messages')
+  .description('View conversations and message history');
+
+messagesCmd
+  .command('conversations <clientId>')
+  .description('List conversations for a client')
+  .action(async (clientId: string) => { await messagesConversationsCommand(clientId); });
+
+messagesCmd
+  .command('history <clientId> <jid>')
+  .description('View message history with a contact')
+  .option('-n, --limit <n>', 'Number of messages', '20')
+  .action(async (clientId: string, jid: string, options: { limit?: string }) => { await messagesHistoryCommand(clientId, jid, options); });
+
+// ─── managed contacts (pro) ─────────────────────────────────────────────────
+
+const mcCmd = program
+  .command('managed-contacts')
+  .alias('mc')
+  .description('Manage contacts with tags and segments');
+
+mcCmd.command('list').description('List managed contacts')
+  .option('-s, --search <query>', 'Search by name or phone')
+  .option('-t, --tag <tagId>', 'Filter by tag')
+  .action(async (options: { search?: string; tag?: string }) => { await proContactsListCommand(options); });
+
+mcCmd.command('add <phone>').description('Add a contact')
+  .option('-n, --name <name>', 'Contact name')
+  .option('-e, --email <email>', 'Contact email')
+  .action(async (phone: string, options: { name?: string; email?: string }) => { await proContactsAddCommand(phone, options); });
+
+mcCmd.command('delete <id>').description('Delete a contact')
+  .action(async (id: string) => { await proContactsDeleteCommand(id); });
+
+mcCmd.command('import <file>').description('Import contacts from CSV file (phone,name per line)')
+  .action(async (file: string) => { await proContactsImportCommand(file); });
+
+mcCmd.command('export <output>').description('Export contacts to CSV file')
+  .action(async (output: string) => { await proContactsExportCommand(output); });
+
+mcCmd.command('tags').description('List all tags')
+  .action(async () => { await proTagsListCommand(); });
+
+mcCmd.command('tag-add <name>').description('Create a new tag')
+  .action(async (name: string) => { await proTagsAddCommand(name); });
+
+// ─── templates ───────────────────────────────────────────────────────────────
+
+const templatesCmd = program
+  .command('templates')
+  .description('Manage message templates');
+
+templatesCmd.command('list').description('List all templates')
+  .action(async () => { await templatesListCommand(); });
+
+templatesCmd.command('send <name> <clientId> <number>').description('Send a template')
+  .option('-v, --vars <vars>', 'Variables as key=value,key=value')
+  .action(async (name: string, clientId: string, number: string, options: { vars?: string }) => { await templatesSendCommand(name, clientId, number, options); });
+
+// ─── campaigns ───────────────────────────────────────────────────────────────
+
+const campaignsCmd = program
+  .command('campaigns')
+  .description('Manage broadcast campaigns');
+
+campaignsCmd.command('list').description('List all campaigns')
+  .action(async () => { await campaignsListCommand(); });
+
+campaignsCmd.command('create').description('Create a new campaign')
+  .option('--name <name>', 'Campaign name')
+  .option('--client <clientId>', 'Client ID', '1')
+  .option('--message <message>', 'Message to send')
+  .option('--numbers <numbers>', 'Comma-separated phone numbers')
+  .action(async (options: { name: string; client: string; message: string; numbers: string }) => { await campaignsCreateCommand(options); });
+
+campaignsCmd.command('send <id>').description('Send a draft campaign')
+  .action(async (id: string) => { await campaignsSendCommand(id); });
+
+campaignsCmd.command('delete <id>').description('Delete a campaign')
+  .action(async (id: string) => { await campaignsDeleteCommand(id); });
+
+// ─── flows ───────────────────────────────────────────────────────────────────
+
+const flowsCmd = program
+  .command('flows')
+  .description('Manage chatbot flows');
+
+flowsCmd.command('list').description('List all flows')
+  .action(async () => { await flowsListCommand(); });
+
+flowsCmd.command('enable <id>').description('Enable a flow')
+  .action(async (id: string) => { await flowsEnableCommand(id); });
+
+flowsCmd.command('disable <id>').description('Disable a flow')
+  .action(async (id: string) => { await flowsDisableCommand(id); });
+
+flowsCmd.command('test <id> <message>').description('Test a flow with a message')
+  .action(async (id: string, message: string) => { await flowsTestCommand(id, message); });
+
+flowsCmd.command('export <id>').description('Export flow to JSON file')
+  .option('-o, --output <file>', 'Output filename')
+  .action(async (id: string, options: { output?: string }) => { await flowsExportCommand(id, options.output); });
+
+flowsCmd.command('import <file>').description('Import flow from JSON file')
+  .action(async (file: string) => { await flowsImportCommand(file); });
+
+flowsCmd.command('delete <id>').description('Delete a flow')
+  .action(async (id: string) => { await flowsDeleteCommand(id); });
+
+// ─── analytics ───────────────────────────────────────────────────────────────
+
+program
+  .command('analytics')
+  .description('Show analytics overview')
+  .option('-p, --period <period>', 'Period (7d, 14d, 30d)', '7d')
+  .action(async (options: { period?: string }) => { await analyticsCommand(options); });
 
 // ─── logs ─────────────────────────────────────────────────────────────────────
 
