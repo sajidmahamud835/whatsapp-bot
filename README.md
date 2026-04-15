@@ -8,459 +8,430 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-GPL_3.0-red?style=flat-square)](./LICENSE)
 [![Version](https://img.shields.io/badge/version-4.2.0-brightgreen?style=flat-square)](./CHANGELOG.md)
+[![GitHub Stars](https://img.shields.io/github/stars/sajidmahamud835/whatsapp-bot?style=flat-square)](https://github.com/sajidmahamud835/whatsapp-bot/stargazers)
 
-**REST API + WebSocket + CLI + AI Auto-Reply + Webhooks + Cron + SQLite**
+**Dashboard + Flow Builder + REST API + AI + CLI — All Free, All Open Source**
 
-Multi-Client &bull; Dual Engine &bull; 70+ Endpoints &bull; Persistent Storage &bull; Production-Ready
+[Quick Start](#-quick-start) &bull; [Dashboard](#-dashboard) &bull; [Flow Builder](#-flow-builder) &bull; [API Docs](#-api-reference) &bull; [CLI Docs](#-cli-reference)
 
-[Quick Start](#-quick-start) &bull; [API Reference](#-api-reference) &bull; [CLI Reference](#%EF%B8%8F-cli-reference) &bull; [Configuration](#-configuration) &bull; [Report Bug](https://github.com/sajidmahamud835/whatsapp-bot/issues)
+**Love this project? [Give it a star](https://github.com/sajidmahamud835/whatsapp-bot/stargazers)** — it helps more people discover it.
 
 </div>
 
 ---
 
-## Why WA Convo?
+## What is WA Convo?
 
-Most WhatsApp bots on GitHub give you a basic send/receive API. **WA Convo gives you everything:**
+WA Convo is a **free, open-source WhatsApp automation platform** that gives you everything other tools charge hundreds for:
 
-| Feature | WA Convo | Others |
-|---------|:--------:|:------:|
-| Multi-client (up to 6 accounts) | Yes | Rarely |
-| Dual engine (Baileys + Official Meta API) | Yes | No |
-| AI auto-reply (OpenAI, Claude, Gemini, Ollama) | Yes | No |
-| Cron job scheduler | Yes | No |
-| Multi-webhook with HMAC signing & retry | Yes | No |
-| SQLite persistence (messages, AI history) | Yes | No |
-| Input validation (Zod) | Yes | No |
-| Security hardening (Helmet, rate limit, HMAC) | Yes | Rarely |
-| WebSocket real-time events | Yes | Some |
-| Full CLI tool | Yes | No |
-| Stats & monitoring endpoint | Yes | No |
-| TypeScript with strict mode | Yes | Some |
+- **Dashboard UI** with dark/light theme — manage everything from your browser
+- **Visual Flow Builder** — drag-and-drop chatbot builder with 12 node types
+- **70+ REST API endpoints** — send messages, media, polls, reactions, and more
+- **AI Auto-Reply** — plug in OpenAI, Claude, Gemini, or Ollama
+- **Contact Manager** — tags, segments, bulk import/export
+- **Broadcast Campaigns** — send to thousands with delivery tracking
+- **Quick Reply Templates** — variable substitution, phone preview
+- **Cron Scheduler** — recurring messages and broadcasts
+- **Multi-Client** — control up to 6 WhatsApp accounts simultaneously
+- **Full CLI** — everything the dashboard can do, from your terminal
 
 ---
 
-## Features
+## Why WA Convo?
 
-### Dual Engine
-- **Baileys** (default) — Free, WebSocket-based, no Meta approval needed
-- **Official Cloud API** — Meta's WhatsApp Business API for production deployments
-
-### 70+ REST API Endpoints
-Messages, media, polls, reactions, voice notes, stickers, locations, contacts, groups, labels, status/stories, presence, privacy settings, chat management — all via REST.
-
-### AI Auto-Reply
-Plug in any LLM. Supports **OpenAI**, **Anthropic Claude**, **Google Gemini**, **Ollama**, and any OpenAI-compatible API (OpenRouter, Together, etc). Per-conversation context with persistent history.
-
-### Advanced Webhook System
-Register multiple webhooks with event filtering, HMAC payload signing, and exponential backoff retry (1s > 5s > 30s > 5min). Full delivery log.
-
-### Cron Job Scheduler
-Schedule recurring messages, broadcasts, and status updates with cron expressions. Full CRUD API and CLI.
-
-### SQLite Persistence
-Messages, AI conversation history, webhook delivery logs, and cron execution logs all stored in SQLite. Automatic retention purge (configurable).
-
-### Security
-- Zod schema validation on every endpoint
-- Helmet security headers
-- Per-route body size limits (1MB default, 50MB for media)
-- HMAC signature verification for Meta webhooks
-- API key authentication with Bearer tokens
-- Phone number redaction in logs (enabled by default)
-- SSL/TLS support
-
-### Real-Time WebSocket
-Connect to `ws://localhost:3000/ws` for live events: messages, QR codes, connection status, group activity.
-
-### Full CLI Tool
-```bash
-wa-convo start              # Start the server
-wa-convo client init 1      # Initialize client
-wa-convo send 1 880... Hi   # Send a message
-wa-convo ai test "Hello"    # Test AI
-wa-convo cron list           # List cron jobs
-wa-convo logs --follow       # Stream logs
-```
-
-### Stats & Monitoring
-```
-GET /stats
-```
-Returns uptime, memory, client counts, message volume (24h), AI stats, cron stats, webhook delivery stats. Ready for Grafana or any monitoring tool.
+| Feature | WA Convo | Others |
+|---------|:--------:|:------:|
+| Dashboard UI | **Yes (13 pages)** | Rarely |
+| Visual chatbot flow builder | **Yes (drag & drop)** | No |
+| Multi-client (6 accounts) | **Yes** | Rarely |
+| Dual engine (Baileys + Meta API) | **Yes** | No |
+| AI auto-reply (5 providers) | **Yes** | No |
+| Contact manager with tags | **Yes** | No |
+| Broadcast campaigns | **Yes** | No |
+| Quick reply templates | **Yes** | No |
+| Cron job scheduler | **Yes** | No |
+| Multi-webhook with HMAC & retry | **Yes** | No |
+| SQLite persistence | **Yes** | No |
+| Full CLI tool (30+ commands) | **Yes** | No |
+| Security (Zod, Helmet, HMAC) | **Yes** | Rarely |
+| WebSocket real-time events | **Yes** | Some |
+| 100% free & open source | **Yes** | No |
 
 ---
 
 ## Quick Start
-
-### Prerequisites
-- Node.js 18+
-- npm
-
-### Install & Run
 
 ```bash
 git clone https://github.com/sajidmahamud835/whatsapp-bot.git
 cd whatsapp-bot
 npm install
 npm run build
+npm run build:dashboard   # Build the dashboard UI
 npm start
 ```
 
+Open **http://localhost:3000/dashboard** to access the dashboard.
+
 ### Connect WhatsApp
 
-```bash
-# Initialize client 1
-curl -X POST http://localhost:3000/1/init
-
-# Open QR in browser
-open http://localhost:3000/1/qr
-
-# Scan with your phone — done!
-```
+1. Open the Dashboard → **Clients** page
+2. Click **Initialize** on Client 1
+3. Scan the QR code with your phone (WhatsApp → Linked Devices → Link a Device)
+4. Done — start sending messages!
 
 ### Send Your First Message
 
 ```bash
 curl -X POST http://localhost:3000/1/send \
   -H "Content-Type: application/json" \
-  -d '{"number": "8801XXXXXXXXX", "message": "Hello from WA Convo!"}'
-```
-
-### Enable AI Auto-Reply
-
-Edit `config/config.json`:
-```json
-{
-  "ai": {
-    "enabled": true,
-    "defaultProvider": "openai",
-    "providers": {
-      "openai": {
-        "type": "openai",
-        "apiKey": "sk-...",
-        "model": "gpt-4o-mini"
-      }
-    }
-  }
-}
+  -d '{"number": "YOUR_NUMBER", "message": "Hello from WA Convo!"}'
 ```
 
 ---
 
-## Configuration
+## Dashboard
 
-**Config file:** `config/config.json`
+A full-featured web dashboard with **13 pages**, dark/light theme, and real-time data.
 
-```json
-{
-  "server": { "port": 3000, "host": "127.0.0.1", "apiKey": "" },
-  "clients": { "count": 6, "reconnectInterval": 5000 },
-  "database": { "path": "./data/wa-convo.db", "retentionDays": 30 },
-  "ai": { "enabled": false, "defaultProvider": "", "systemPrompt": "...", "providers": {} },
-  "crons": [],
-  "integrations": { "webhooks": [] },
-  "logging": { "level": "info", "redactNumbers": true },
-  "deployment": { "ssl": { "enabled": false } }
-}
-```
+| Page | What it does |
+|------|-------------|
+| **Dashboard** | KPI cards, message volume chart, client status, system metrics |
+| **Clients** | Initialize, QR code (inline), logout, session health detection, one-click reset |
+| **Messages** | WhatsApp-like chat UI — conversations, message bubbles, avatars, date separators |
+| **Contacts** | Table with search, tags, edit, bulk import (CSV), export, bulk delete |
+| **Templates** | Card grid, edit, preview (phone mockup), send to contact, variable substitution |
+| **Campaigns** | Create, send with confirmation, delivery tracking per recipient |
+| **Flow Builder** | Visual drag-and-drop chatbot builder (see below) |
+| **Analytics** | Message volume charts, top contacts, period selector, CSV export |
+| **Webhooks** | Register, test, delivery log |
+| **Cron Jobs** | Create with schedule presets, run now (with confirmation), human-readable schedules |
+| **AI Config** | Add/remove providers, model picker, test chat, system prompt editor, sliders |
+| **Settings** | Inline config editor for every setting, reload config |
 
-All settings can be overridden with environment variables. See [.env.example](./.env.example).
+### Build the Dashboard
 
-**Via CLI:**
 ```bash
-wa-convo config set server.port 3001
-wa-convo config set ai.enabled true
-wa-convo config edit   # opens in $EDITOR
+npm run build:dashboard   # Builds to dashboard/dist/
+npm start                 # Serves dashboard at /dashboard
 ```
 
-**Via API:**
+For development with hot reload:
+
 ```bash
-GET  /config              # full config (sensitive fields redacted)
-PUT  /config/server.port  # set value { "value": 3001 }
-POST /config/reload       # reload from disk
+npm run dev:dashboard     # Vite dev server on port 3001
 ```
+
+---
+
+## Flow Builder
+
+Build chatbot flows visually — no coding required. Drag nodes, connect them, enable the flow.
+
+### 12 Node Types
+
+| Category | Nodes |
+|----------|-------|
+| **Triggers** | Message Received (keyword, exact match, starts with, regex) |
+| **Actions** | Send Message, Send Media, Send Template, AI Reply |
+| **Logic** | Condition (9 operators), Delay, Wait for Reply, End |
+| **Data** | Set Variable, Add Tag, HTTP Request |
+
+### How It Works
+
+1. Go to **Flow Builder** in the dashboard
+2. Click **New Flow** → give it a name and trigger type
+3. Drag nodes from the palette onto the canvas
+4. Connect nodes by dragging from output to input handles
+5. Click a node to configure it (message text, conditions, variables)
+6. **Save** and **Enable** the flow
+7. When someone messages your WhatsApp with the trigger keyword, the flow executes automatically
+
+### Built-in Flows (10 ready to use)
+
+| Flow | What it does |
+|------|-------------|
+| Welcome Bot | Greets anyone who says hi/hello/hey |
+| Auto-Reply (Away) | Away message when you're offline |
+| AI Support Agent | AI answers questions + tags contact |
+| Lead Capture | Multi-step: collects name → email → tags as lead |
+| Feedback Collector | 1-5 rating → branches by score → tags accordingly |
+| Urgent Router | Detects "urgent"/"emergency" → tags + priority response |
+| Unsubscribe Handler | Opt-out with tag and confirmation |
+| Re-subscribe Handler | Opt-in when user sends START |
+| AI Chatbot | Conversational AI with wait-for-reply |
+| Business Hours | Shows hours/location/contact info |
+
+### Export & Import
+
+Export flows as JSON files to share or backup. Import flows from JSON.
+
+---
+
+## Contact Manager
+
+- **CRUD** — add, edit, delete contacts
+- **Tags** — create tags, assign to contacts, filter by tag
+- **Segments** — query contacts by tag combinations
+- **Bulk Import** — paste CSV (phone,name) or upload file
+- **CSV Export** — download all contacts
+- **Bulk Delete** — checkbox selection + batch delete
+
+---
+
+## Broadcast Campaigns
+
+- **Create** campaigns targeting phone number lists
+- **Confirmation dialog** before sending (shows recipient count)
+- **Per-recipient tracking** — sent, failed, pending
+- **Delivery stats** — see results in the table
+
+---
+
+## Templates
+
+- **Create** with categories (greeting, support, sales, notification)
+- **Variable substitution** — `{{name}}`, `{{order_id}}`, `{{date}}`
+- **Phone preview** — see how the message looks in a phone mockup
+- **Send to contact** — fill variables and send directly
+- **Duplicate** — copy templates quickly
+
+### 5 Built-in Templates
+
+Welcome Message, Order Confirmation, Appointment Reminder, Support Ticket, Follow Up
+
+---
+
+## AI Auto-Reply
+
+Plug in any LLM provider. Supports:
+
+| Provider | Config Type | Models |
+|----------|-------------|--------|
+| **OpenAI** | `openai` | GPT-4o, GPT-4o-mini |
+| **Anthropic** | `anthropic` | Claude Sonnet 4.6, Haiku 4.5 |
+| **Google** | `google` | Gemini 2.0 Flash, 1.5 Pro |
+| **Ollama** | `ollama` | Llama 3.2, Mistral, Gemma |
+| **OpenRouter** | `openrouter` | 100+ models |
+| **Any OpenAI-compatible** | `openai` + `baseUrl` | Together, Groq, etc. |
+
+Configure via Dashboard → **AI Config** page or CLI.
 
 ---
 
 ## CLI Reference
 
+Everything the dashboard can do, from your terminal:
+
 ```
 wa-convo --help
 ```
 
+### Server & Monitoring
 | Command | Description |
 |---------|-------------|
-| `wa-convo start` | Start the API server |
+| `wa-convo start` | Start the server |
 | `wa-convo stop` | Stop the server |
-| `wa-convo status` | Show server & client status |
+| `wa-convo status` | Server & client status |
+| `wa-convo stats` | Server metrics |
+| `wa-convo analytics` | Analytics overview |
+| `wa-convo logs [--follow]` | View/stream logs |
+
+### Clients
+| Command | Description |
+|---------|-------------|
 | `wa-convo client list` | List all clients |
-| `wa-convo client init <id>` | Initialize a client |
-| `wa-convo client qr <id>` | Show QR code |
-| `wa-convo client logout <id>` | Logout a client |
-| `wa-convo send <id> <number> <msg>` | Send a message |
-| `wa-convo config get <key>` | Get config value |
-| `wa-convo config set <key> <val>` | Set config value |
-| `wa-convo config edit` | Edit config in $EDITOR |
-| `wa-convo contacts list <id>` | List contacts |
-| `wa-convo groups list <id>` | List groups |
-| `wa-convo ai providers` | Show AI providers |
-| `wa-convo ai test "Hello"` | Test AI response |
-| `wa-convo ai enable / disable` | Toggle AI auto-reply |
-| `wa-convo cron list` | List cron jobs |
-| `wa-convo cron add` | Create cron job |
-| `wa-convo cron run <id>` | Run job now |
-| `wa-convo logs` | View logs |
-| `wa-convo logs --follow` | Stream logs live |
-| `wa-convo logs --level error` | Filter by level |
+| `wa-convo client init <id>` | Initialize client |
+| `wa-convo client logout <id>` | Logout |
+| `wa-convo client reset <id>` | Reset session (fixes encryption) |
+
+### Messaging
+| Command | Description |
+|---------|-------------|
+| `wa-convo send <cid> <number> <msg>` | Send message |
+| `wa-convo messages conversations <cid>` | List conversations |
+| `wa-convo messages history <cid> <jid>` | View chat history |
+
+### Contacts
+| Command | Description |
+|---------|-------------|
+| `wa-convo managed-contacts list` | List contacts |
+| `wa-convo managed-contacts add <phone>` | Add contact |
+| `wa-convo managed-contacts import <file>` | Import CSV |
+| `wa-convo managed-contacts export <file>` | Export CSV |
+| `wa-convo managed-contacts tags` | List tags |
+
+### Templates & Campaigns
+| Command | Description |
+|---------|-------------|
+| `wa-convo templates list` | List templates |
+| `wa-convo templates send <name> <cid> <num>` | Send template |
+| `wa-convo campaigns list` | List campaigns |
+| `wa-convo campaigns create --name --message --numbers` | Create campaign |
+| `wa-convo campaigns send <id>` | Send campaign |
+
+### Flows
+| Command | Description |
+|---------|-------------|
+| `wa-convo flows list` | List flows |
+| `wa-convo flows enable <id>` | Enable flow |
+| `wa-convo flows disable <id>` | Disable flow |
+| `wa-convo flows test <id> <msg>` | Test flow |
+| `wa-convo flows export <id>` | Export to JSON |
+| `wa-convo flows import <file>` | Import from JSON |
+
+### AI, Cron, Webhooks, Config
+| Command | Description |
+|---------|-------------|
+| `wa-convo ai providers / test / enable / disable` | AI management |
+| `wa-convo cron list / add / run <id> / delete <id>` | Cron jobs |
+| `wa-convo webhooks list / add <url> / test <id>` | Webhooks |
+| `wa-convo config get <key> / set <key> <val>` | Configuration |
 
 ---
 
 ## API Reference
 
-> All protected endpoints require `Authorization: Bearer YOUR_API_KEY` (if API_KEY is set).
+> **70+ endpoints.** All require `Authorization: Bearer YOUR_API_KEY` (if set).
 
-### System
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/` | API info + version |
-| `GET` | `/health` | Health check + client summary |
-| `GET` | `/clients` | List all clients |
-| `GET` | `/stats` | Server metrics & monitoring |
-| `GET` | `/config` | Full config (redacted) |
-| `PUT` | `/config/:path` | Set config value |
-| `POST` | `/config/reload` | Reload config from disk |
-
-### Client Management
+<details>
+<summary><b>System</b></summary>
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/:id` | Client status |
-| `POST` | `/:id/init` | Initialize client |
-| `GET` | `/:id/qr` | QR code page |
+| `GET` | `/` | API info |
+| `GET` | `/health` | Health check |
+| `GET` | `/clients` | All clients |
+| `GET` | `/stats` | Server metrics |
+| `GET/PUT` | `/config/:path` | Config CRUD |
+| `POST` | `/config/reload` | Reload config |
+
+</details>
+
+<details>
+<summary><b>Client Management</b></summary>
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/:id/status` | Client status + health |
+| `POST` | `/:id/init` | Initialize |
 | `POST` | `/:id/logout` | Logout |
-| `POST` | `/:id/exit` | Stop & destroy client |
+| `POST` | `/:id/reset` | Reset session |
+| `GET` | `/:id/qr` | QR code page |
 
-### Messaging
+</details>
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/:id/send` | Send text `{number, message}` |
-| `POST` | `/:id/sendMedia` | Send media from URL `{number, mediaUrl, caption?}` |
-| `POST` | `/:id/sendBulk` | Bulk send `{numbers[], message}` |
-| `POST` | `/:id/messages/react` | Send reaction `{key, emoji}` |
-| `POST` | `/:id/messages/poll` | Create poll `{number, title, options[]}` |
-| `POST` | `/:id/messages/viewonce` | View-once media |
-| `POST` | `/:id/messages/edit` | Edit message `{key, newText}` |
-| `POST` | `/:id/messages/delete` | Delete for everyone `{key}` |
-| `POST` | `/:id/messages/reply` | Reply/quote `{key, text}` |
-| `POST` | `/:id/messages/forward` | Forward `{key, to}` |
-| `POST` | `/:id/messages/location` | Send location `{number, latitude, longitude}` |
-| `POST` | `/:id/messages/contact` | Send vCard `{number, name, contactNumber}` |
-| `POST` | `/:id/messages/sticker` | Send sticker |
-| `POST` | `/:id/messages/voice` | Send voice note |
-| `POST` | `/:id/messages/read` | Mark as read `{keys[]}` |
-| `GET` | `/:id/messages/recent` | Recent messages `?limit=50` |
-| `GET` | `/:id/messages/conversations` | Conversation list with last message |
-| `GET` | `/:id/messages/conversation/:jid` | Message thread for a contact |
-
-### Groups
+<details>
+<summary><b>Messaging (15 endpoints)</b></summary>
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/:id/groups/create` | Create group |
-| `POST` | `/:id/groups/join` | Join via invite |
-| `GET` | `/:id/groups` | List all groups |
-| `GET` | `/:id/groups/:gid` | Group metadata |
-| `GET` | `/:id/groups/:gid/invite` | Get invite link |
-| `POST` | `/:id/groups/:gid/revoke-invite` | Revoke invite |
-| `POST` | `/:id/groups/:gid/add` | Add participants |
-| `POST` | `/:id/groups/:gid/remove` | Remove participants |
-| `POST` | `/:id/groups/:gid/promote` | Make admin |
-| `POST` | `/:id/groups/:gid/demote` | Revoke admin |
-| `PUT` | `/:id/groups/:gid` | Update name/desc/photo |
-| `PUT` | `/:id/groups/:gid/settings` | Set announce/restrict |
+| `POST` | `/:id/send` | Send text |
+| `POST` | `/:id/sendMedia` | Send media |
+| `POST` | `/:id/sendBulk` | Bulk send |
+| `POST` | `/:id/messages/react` | Reaction |
+| `POST` | `/:id/messages/poll` | Poll |
+| `POST` | `/:id/messages/edit` | Edit |
+| `POST` | `/:id/messages/delete` | Delete |
+| `POST` | `/:id/messages/reply` | Reply |
+| `POST` | `/:id/messages/forward` | Forward |
+| `POST` | `/:id/messages/location` | Location |
+| `POST` | `/:id/messages/contact` | vCard |
+| `POST` | `/:id/messages/sticker` | Sticker |
+| `POST` | `/:id/messages/voice` | Voice note |
+| `GET` | `/:id/messages/recent` | Recent messages |
+| `GET` | `/:id/messages/conversations` | Conversations |
+| `GET` | `/:id/messages/conversation/:jid` | Chat history |
 
-### Contacts & Labels
+</details>
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/:id/contacts/check` | Check WhatsApp registration |
-| `GET` | `/:id/contacts/:jid/profile-pic` | Profile picture URL |
-| `GET` | `/:id/contacts/:jid/about` | About/status text |
-| `GET` | `/:id/contacts/:jid/business` | Business profile |
-| `POST` | `/:id/contacts/block` | Block contact |
-| `POST` | `/:id/contacts/unblock` | Unblock contact |
-| `GET` | `/:id/labels` | List labels |
-| `POST` | `/:id/labels` | Create label |
+<details>
+<summary><b>Groups (12 endpoints)</b></summary>
 
-### Status / Stories
+Create, join, list, metadata, invite, add/remove participants, promote/demote, update settings.
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/:id/status/text` | Post text status |
-| `POST` | `/:id/status/image` | Post image status |
-| `POST` | `/:id/status/video` | Post video status |
+</details>
 
-### Presence & Privacy
+<details>
+<summary><b>Contacts, Status, Presence, Privacy</b></summary>
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/:id/presence/update` | Set online/composing/recording |
-| `POST` | `/:id/chats/:jid/disappearing` | Disappearing messages |
-| `POST` | `/:id/chats/:jid/archive` | Archive chat |
-| `POST` | `/:id/chats/:jid/pin` | Pin chat |
-| `POST` | `/:id/chats/:jid/mute` | Mute chat |
+Check registration, profile pics, about, business profiles, block/unblock, labels, text/image/video status, presence, disappearing messages, archive, pin, mute.
 
-### AI
+</details>
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/ai/providers` | List providers & config |
-| `POST` | `/ai/test` | Test AI `{message, provider?}` |
-| `PUT` | `/ai/prompt` | Update system prompt `{prompt}` |
-| `PUT` | `/ai/config` | Update AI settings |
-| `DELETE` | `/ai/history/:jid` | Clear conversation history |
+<details>
+<summary><b>AI, Cron, Webhooks</b></summary>
 
-### Cron Jobs
+| Endpoint | Methods |
+|----------|---------|
+| `/ai/providers` `/ai/test` `/ai/prompt` `/ai/config` | GET, POST, PUT |
+| `/cron` `/cron/:id` `/cron/:id/run` | GET, POST, PUT, DELETE |
+| `/webhooks` `/webhooks/:id` `/webhooks/:id/test` `/webhooks/:id/deliveries` | GET, POST, PUT, DELETE |
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/cron` | List all jobs |
-| `POST` | `/cron` | Create job `{name, schedule, clientId, action, params}` |
-| `PUT` | `/cron/:id` | Update job |
-| `DELETE` | `/cron/:id` | Delete job |
-| `POST` | `/cron/:id/run` | Run job now |
+</details>
 
-### Webhooks
+<details>
+<summary><b>Contacts Manager, Templates, Campaigns, Flows, Analytics</b></summary>
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/webhooks` | List registered webhooks |
-| `POST` | `/webhooks` | Register `{url, events?, secret?, enabled?}` |
-| `GET` | `/webhooks/:id` | Get webhook + recent deliveries |
-| `PUT` | `/webhooks/:id` | Update webhook |
-| `DELETE` | `/webhooks/:id` | Delete webhook |
-| `POST` | `/webhooks/:id/test` | Send test payload |
-| `GET` | `/webhooks/:id/deliveries` | Delivery log |
+| Endpoint | Methods |
+|----------|---------|
+| `/pro/contacts` `/pro/tags` `/pro/segments/query` | Full CRUD |
+| `/pro/templates` `/pro/templates/:id/send` `/pro/templates/:id/preview` | Full CRUD + send |
+| `/pro/campaigns` `/pro/campaigns/:id/send` | Full CRUD + send |
+| `/pro/flows` `/pro/flows/:id/toggle` `/pro/flows/:id/test` `/pro/flows/import` `/pro/flows/:id/export` | Full CRUD + toggle + test + import/export |
+| `/pro/analytics/overview` `/pro/analytics/messages` `/pro/analytics/conversations` `/pro/analytics/ai` `/pro/analytics/export` | GET |
 
-### Meta Webhook (public, no auth)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/webhook/whatsapp` | Meta hub verification |
-| `POST` | `/webhook/whatsapp` | Incoming Meta events |
+</details>
 
 ---
 
-## WebSocket
+## Configuration
 
-Connect to `ws://localhost:3000/ws` for real-time events.
+**Config file:** `config/config.json` — edit via dashboard Settings page, CLI, or API.
 
-**Events:** `message.received`, `message.sent`, `client.connected`, `client.disconnected`, `client.qr`, `client.ready`, `client.error`, `group.joined`, `group.left`, `server.started`, `server.stopped`
-
-```json
-// Subscribe to specific events
-{ "type": "subscribe", "events": ["message.received", "client.qr"] }
-
-// Ping
-{ "type": "ping" }
-```
+All settings can be overridden with environment variables. See [.env.example](./.env.example).
 
 ---
 
-## Webhook System
+## Onboarding
 
-Register webhooks to receive events via HTTP POST:
+First-time users see a **6-step guided tour** that walks through:
+1. Connect WhatsApp
+2. Send Messages
+3. Build Chatbot Flows
+4. Enable AI
+5. Track Analytics
 
-```bash
-# Register a webhook
-curl -X POST http://localhost:3000/webhooks \
-  -H "Authorization: Bearer YOUR_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://your-server.com/webhook",
-    "events": ["message.received"],
-    "secret": "your-hmac-secret"
-  }'
-```
-
-Payloads are signed with `X-WA-Signature-256` header. Failed deliveries retry with exponential backoff.
+Skippable and dismissable. Shows once per browser.
 
 ---
 
-## Project Structure
+## Tech Stack
 
-```
-src/
-├── core/                    # Core business logic
-│   ├── client-manager.ts    # Multi-client session management
-│   ├── config.ts            # JSON config with dot-notation access
-│   ├── events.ts            # Typed event bus
-│   ├── logger.ts            # Pino structured logging
-│   ├── stats.ts             # Server metrics collector
-│   ├── types.ts             # TypeScript interfaces
-│   ├── ai/                  # AI auto-reply
-│   │   ├── manager.ts       # Provider management & conversation context
-│   │   └── providers/       # OpenAI, Anthropic, Google
-│   ├── db/                  # SQLite persistence
-│   │   ├── database.ts      # Connection & migrations
-│   │   ├── message-store.ts # Message persistence
-│   │   ├── ai-history-store.ts
-│   │   ├── webhook-log-store.ts
-│   │   └── cron-log-store.ts
-│   ├── engines/             # WhatsApp engine abstraction
-│   │   ├── baileys.ts       # Baileys WebSocket engine
-│   │   └── official.ts      # Meta Cloud API engine
-│   ├── cron/                # Cron job scheduler
-│   └── webhooks/            # Multi-webhook dispatch system
-├── api/                     # REST API & WebSocket
-│   ├── server.ts            # Express entry point
-│   ├── websocket.ts         # WebSocket event streaming
-│   ├── middleware/           # Auth, rate limit, validation, HMAC
-│   ├── schemas/             # Zod request validation schemas
-│   └── routes/              # 14 route modules
-├── cli/                     # CLI tool (wa-convo)
-│   ├── index.ts             # Commander setup
-│   └── commands/            # CLI command handlers
-└── utils/                   # JID formatting, session helpers
-```
-
----
-
-## AI Providers
-
-| Provider | Config Type | Notes |
-|----------|-------------|-------|
-| OpenAI | `openai` | GPT-4o, GPT-4o-mini, etc. |
-| OpenRouter | `openrouter` | Access 100+ models via one API |
-| Anthropic | `anthropic` | Claude 3 Haiku, Sonnet, Opus |
-| Google Gemini | `google` | Gemini 1.5 Flash, Pro |
-| Ollama | `ollama` | Run local models (Llama, Mistral) |
-| Any OpenAI-compatible | `openai` + `baseUrl` | Together, Groq, etc. |
-
----
-
-## Cron Job Actions
-
-| Action | Params | Description |
-|--------|--------|-------------|
-| `sendMessage` | `{to, message}` | Send to one number |
-| `broadcast` | `{numbers[], message}` | Send to multiple numbers |
-| `postStatus` | `{text}` | Post WhatsApp status/story |
-
-Schedule format: [cron expressions](https://crontab.guru) (e.g., `0 9 * * *` = every day at 9am)
+- **Backend:** Node.js + TypeScript + Express
+- **Dashboard:** React 19 + Vite + Tailwind CSS + React Query + Recharts + ReactFlow
+- **Database:** SQLite (better-sqlite3)
+- **WhatsApp:** Baileys (WebSocket) + Meta Cloud API
+- **AI:** OpenAI, Anthropic, Google Gemini, Ollama
+- **Testing:** Jest + ts-jest + Supertest
 
 ---
 
 ## Contributing
 
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
 1. Fork the repo
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create your feature branch
+3. Run `npm run typecheck && npm test`
+4. Submit a Pull Request
+
+---
+
+## Support
+
+- **Report bugs:** [Create an issue](https://github.com/sajidmahamud835/whatsapp-bot/issues/new)
+- **Request features:** [Create an issue](https://github.com/sajidmahamud835/whatsapp-bot/issues/new)
+- **Questions:** [Discussions](https://github.com/sajidmahamud835/whatsapp-bot/discussions)
 
 ---
 
@@ -474,6 +445,6 @@ GNU GPL v3.0 — See [LICENSE](./LICENSE) for details.
 
 **Built by [Sajid Mahamud](https://github.com/sajidmahamud835)**
 
-If this project helped you, please give it a star!
+If WA Convo saved you time, **[give it a star](https://github.com/sajidmahamud835/whatsapp-bot/stargazers)** — it means the world.
 
 </div>
