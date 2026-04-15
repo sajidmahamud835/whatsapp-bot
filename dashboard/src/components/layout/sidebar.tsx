@@ -5,6 +5,7 @@ import { useThemeStore } from '../../stores/theme-store';
 import {
   LayoutDashboard, Smartphone, MessageSquare, Users, FileText,
   Megaphone, Workflow, BarChart3, Webhook, Clock, Bot, Settings, LogOut, ChevronLeft, Sun, Moon,
+  Code2, Star, Bug,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -85,8 +86,51 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Theme + Logout */}
-      <div className="px-2 py-3 border-t border-[var(--border)] space-y-1">
+      {/* GitHub + Theme + Logout */}
+      <div className="px-2 py-3 border-t border-[var(--border)] space-y-0.5">
+        {/* GitHub links */}
+        <a
+          href="https://github.com/sajidmahamud835/whatsapp-bot"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            'flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm text-[var(--text-sec)] hover:bg-[var(--bg-hover)] hover:text-[var(--text)] transition-colors',
+            collapsed && 'justify-center px-2',
+          )}
+          title="GitHub"
+        >
+          <Code2 className="h-4 w-4 shrink-0" />
+          {!collapsed && <span>GitHub</span>}
+        </a>
+        <a
+          href="https://github.com/sajidmahamud835/whatsapp-bot/stargazers"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            'flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm text-yellow-500 hover:bg-yellow-500/10 hover:text-yellow-400 transition-colors',
+            collapsed && 'justify-center px-2',
+          )}
+          title="Star on GitHub"
+        >
+          <Star className="h-4 w-4 shrink-0" />
+          {!collapsed && <span>Star on GitHub</span>}
+        </a>
+        <a
+          href="https://github.com/sajidmahamud835/whatsapp-bot/issues/new"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            'flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm text-[var(--text-sec)] hover:bg-[var(--bg-hover)] hover:text-[var(--text)] transition-colors',
+            collapsed && 'justify-center px-2',
+          )}
+          title="Report a Bug"
+        >
+          <Bug className="h-4 w-4 shrink-0" />
+          {!collapsed && <span>Report Issue</span>}
+        </a>
+
+        <div className="my-1 border-t border-[var(--border)]" />
+
         <button
           onClick={toggleTheme}
           className={cn(
@@ -107,6 +151,13 @@ export function Sidebar() {
           <LogOut className="h-4 w-4 shrink-0" />
           {!collapsed && <span>Logout</span>}
         </button>
+
+        {/* Version */}
+        {!collapsed && (
+          <p className="px-3 pt-2 text-[10px] text-[var(--text-muted)]">
+            WA Convo v4.2.0
+          </p>
+        )}
       </div>
     </aside>
   );
